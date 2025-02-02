@@ -1,12 +1,18 @@
 import React from 'react';
-import './App.css';
+import './index.css';
+import CalendarListItem from "./components/CalendarListItem";
 
+
+//          component Application 컴포넌트          //
 function App() {
+    //          render: Application 컴포넌트 렌더링         //
+    //          description: 메인 화면 '/index' -Main         //
+    //          description: 로그인 + 회원가입 화면 '/auth' -Authentication         //
+    //          description:          //
     return (
-        <div className="container">
-            <h1>🚀 Vite + React + TypeScript</h1>
-            <p>Vite 환경이 정상적으로 설정되었습니다!</p>
-        </div>
+        <>
+            <CalendarListItem/>
+        </>
     );
 }
 
