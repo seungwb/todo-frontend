@@ -1,6 +1,8 @@
 import React from 'react';
 import './index.css';
 import CalendarListItem from "./components/CalendarListItem";
+import Header from "./layouts/Header";
+import Calendar from "./views/Calendar";
 
 
 //          component Application 컴포넌트          //
@@ -11,7 +13,7 @@ function App() {
     //          description:          //
     return (
         <>
-            <CalendarListItem/>
+            <Calendar/>
         </>
     );
 }
