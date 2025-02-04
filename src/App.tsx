@@ -3,6 +3,8 @@ import './index.css';
 import CalendarListItem from "./components/CalendarListItem";
 import Header from "./layouts/Header";
 import Calendar from "./views/Calendar";
+import InputBox from "./components/InputBox";
+import Authentication from "./views/Authentication";
 
 
 //          component Application 컴포넌트          //
@@ -13,7 +15,8 @@ function App() {
     //          description:          //
     return (
         <>
-            <Calendar/>
+            <Authentication/>
+
         </>
     );
 }
