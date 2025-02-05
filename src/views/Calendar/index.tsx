@@ -75,9 +75,6 @@ export default function Calendar(){
 
     return(
         <div className="flex flex-col gap-16">
-            <div>
-                <Header/>
-            </div>
             <div className="m-8">
                 <FullCalendar
                     plugins={[dayGridPlugin, interactionPlugin]}

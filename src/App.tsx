@@ -1,10 +1,10 @@
-import React from 'react';
+import React, {useState} from 'react';
 import './index.css';
-import CalendarListItem from "./components/CalendarListItem";
-import Header from "./layouts/Header";
 import Calendar from "./views/Calendar";
-import InputBox from "./components/InputBox";
 import Authentication from "./views/Authentication";
+import {Routes, Route} from "react-router-dom";
+import {AUTH_PATH, MAIN_PATH} from "./constants";
+import Container from './layouts/Container'
 
 
 //          component Application 컴포넌트          //
@@ -14,10 +14,12 @@ function App() {
     //          description: 로그인 + 회원가입 화면 '/auth' -Authentication         //
     //          description:          //
     return (
-        <>
-            <Authentication/>
-
-        </>
+        <Routes>
+            <Route element = {<Container />}>
+                <Route path ={MAIN_PATH} element = {<Calendar/>}/>
+                <Route path ={AUTH_PATH} element = {<Authentication/>}/>
+            </Route>
+        </Routes>
     );
 }
 
