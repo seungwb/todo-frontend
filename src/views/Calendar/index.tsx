@@ -110,7 +110,7 @@ export default function Calendar(){
             </div>
 
             {/* 🟢 필터링된 일정 리스트 출력 */}
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4 items-center">
                 {filteredEvents.length === 0 ? (
                     <p className="text-gray-500 text-center">일정이 없습니다.</p>
                 ) : (

@@ -1,40 +1,40 @@
-import React from 'react';
+import React from "react";
+
+// 날짜 포맷 변경 함수
+const formatDate = (date) => {
+    return new Date(date).toISOString().split("T")[0]; // YYYY-MM-DD 형식
+};
 
 //          component : Calendar List Item 컴포넌트          //
 export default function CalendarListItem({ event }) {
     return (
-        <div className="flex flex-col p-12 gap-4 border-2 rounded-md border-rose-500">
-            {/* 작성자 (현재는 고정, 나중에 추가 가능) */}
-            <div className="flex flex-row justify-between">
-                <div>{'작성자: 관리자'}</div>
-                <div>{new Date(event.start).toLocaleDateString()}</div> {/* 작성일 */}
-            </div>
-
+        <div className="w-2/3 p-6 bg-indigo-200 rounded-lg shadow-md text-gray-900">
             {/* 제목 */}
-            <div>
-                <div className="font-bold text-lg">{event.title}</div>
+            <div className="text-lg font-bold border-b border-gray-400 pb-2">{event.title}</div>
+
+            {/* 작성자 & 작성일 */}
+            <div className="flex justify-between text-sm text-indigo-900 mt-3">
+                <div className="font-semibold">작성자: 관리자</div>
+                <div className="font-semibold">작성일: {formatDate(event.start)}</div>
             </div>
 
-            {/* 시작일 & 마감일 */}
-            <div className="flex flex-row justify-between">
-                <div>시작일: {new Date(event.start).toLocaleString()}</div>
-                <div>마감일: {new Date(event.end).toLocaleString()}</div>
+            {/* 일정 정보 */}
+            <div className="text-sm mt-4 text-gray-800">
+                <div className="font-medium">시작일: {new Date(event.start).toLocaleString()}</div>
+                <div className="font-medium">마감일: {new Date(event.end).toLocaleString()}</div>
             </div>
 
             {/* 장소 */}
-            <div>
-                <div>장소: {event.extendedProps?.location || "미정"}</div>
+            <div className="text-sm mt-4 border-t border-gray-400 pt-3 text-gray-900">
+                <span className="font-semibold text-indigo-900">장소:</span> {event.extendedProps?.location || "미정"}
             </div>
 
             {/* 내용 */}
-            <div>
-                <div>내용: {event.extendedProps?.content || "내용 없음"}</div>
-            </div>
-
-            {/* 이미지 (추후 추가 가능) */}
-            <div>
-                <div>{'이미지: 없음'}</div>
+            <div className="text-sm mt-2 text-gray-900">
+                <span className="font-semibold text-indigo-900">내용:</span> {event.extendedProps?.content || "내용 없음"}
             </div>
         </div>
     );
 }
+
+
