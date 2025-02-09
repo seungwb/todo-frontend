@@ -12,10 +12,6 @@ export default function Calendar(){
     const [selectedDate, setSelectedDate] = useState(""); // 선택된 날짜
     const [filterType, setFilterType] = useState("today"); // 🟢 현재 선택된 필터 상태
 
-    const formatDateTime = (dateTimeStr: string) => {
-        return new Date(dateTimeStr.replace(" ", "T"));
-    };
-
     // 날짜 클릭 시 모달 열기
     const handleDateClick = (info: any) => {
         const clickedDateTime = new Date(info.date);

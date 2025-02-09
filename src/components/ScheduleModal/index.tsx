@@ -1,9 +1,11 @@
 import React, {useEffect, useState} from 'react';
+import {scheduleRequest, signInRequest} from "../../apis";
+import {ScheduleRequestDto} from "../../apis/request/calendar";
+import {useCookies} from "react-cookie";
 
 interface ScheduleModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSave: (event: any) => void;
     selectedDate: string;
 }
 
@@ -12,16 +14,17 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({ isOpen, onClose, onSave, 
         title: "",
         content: "",
         location: "",
-        startTime: "",
-        endTime: "",
+        startDate: "",
+        endDate: "",
     });
+    const [cookies, setCookie] = useCookies();
 
     useEffect(() => {
         if (selectedDate) {
             setFormData((prevFormData) => ({
                 ...prevFormData,
-                startTime: selectedDate, // 🟢 선택한 날짜 + 시간 자동 반영
-                endTime: selectedDate,   // 기본값은 동일한 시간
+                startDate: selectedDate, // 🟢 선택한 날짜 + 시간 자동 반영
+                endDate: selectedDate,   // 기본값은 동일한 시간
             }));
         }
     }, [selectedDate]); // 🟢 selectedDate가 바뀔 때마다 초기값 업데이트
@@ -32,16 +35,16 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({ isOpen, onClose, onSave, 
     };
 
     const handleSubmit = () => {
-        const newEvent = {
-            title: formData.title,
-            start: new Date(formData.startTime),
-            end: new Date(formData.endTime),
-            extendedProps: {
-                content: formData.content,
-                location: formData.location,
-            },
+        const accessToken = cookies.accessToken;
+        if(!accessToken) return;
+        const requestBody: ScheduleRequestDto = {
+            title : formData.title
+            , content : formData.content
+            , location: formData.location
+            , startDate: new Date(formData.startDate)
+            , endDate: new Date(formData.endDate)
         };
-        onSave(newEvent);
+        scheduleRequest(requestBody, accessToken).then();
         onClose();
     };
 
@@ -59,17 +62,17 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({ isOpen, onClose, onSave, 
                        onChange={handleChange}/>
                 <input
                     type="datetime-local"
-                    name="startTime"
+                    name="startDate"
                     className="w-full p-2 border rounded mb-2"
                     onChange={handleChange}
-                    value={formData.startTime} // 🟢 자동 반영된 값 적용
+                    value={formData.startDate} // 🟢 자동 반영된 값 적용
                 />
                 <input
                     type="datetime-local"
-                    name="endTime"
+                    name="endDate"
                     className="w-full p-2 border rounded mb-2"
                     onChange={handleChange}
-                    value={formData.endTime} // 🟢 자동 반영된 값 적용
+                    value={formData.endDate} // 🟢 자동 반영된 값 적용
                 />
                 <div className="flex justify-end space-x-2">
                     <button onClick={onClose} className="bg-gray-400 text-white px-4 py-2 rounded">취소</button>
