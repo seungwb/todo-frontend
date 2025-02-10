@@ -1,4 +1,4 @@
-export default interface ScheduleRequestDto{
+export default interface PostScheduleRequestDto{
     title: string;
     content: string | null;
     location: string | null;

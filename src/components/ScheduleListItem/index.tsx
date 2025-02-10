@@ -6,7 +6,7 @@ const formatDate = (date) => {
 };
 
 //          component : Calendar List Item 컴포넌트          //
-export default function CalendarListItem({ event }) {
+export default function ScheduleListItem({ event }) {
     return (
         <div className="w-2/3 p-6 bg-indigo-200 rounded-lg shadow-md text-gray-900">
             {/* 제목 */}

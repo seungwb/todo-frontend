@@ -6,7 +6,7 @@ import {SignInResponseDto, SignUpResponseDto} from '../../apis/response/auth';
 import {ResponseDto} from '../../apis/response';
 import {useCookies} from 'react-cookie';
 import {useNavigate} from 'react-router-dom';
-import {AUTH_PATH, MAIN_PATH} from '../../constants';
+import {CALENDAR_PATH, MAIN_PATH} from '../../constants';
 
 export default function Authentication() {
     // ✅ 현재 화면 상태 (로그인 / 회원가입)
@@ -46,7 +46,7 @@ export default function Authentication() {
             const now = new Date().getTime();
             const expires = new Date(now + expirationTime * 1000);
             setCookie('accessToken', token, {expires, path: MAIN_PATH});
-            navigator(MAIN_PATH);
+            navigator(CALENDAR_PATH);
 
         }
         //          event handler:  이메일 변경 이벤트 처리          //

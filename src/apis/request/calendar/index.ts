@@ -1,5 +1,5 @@
-import ScheduleRequestDto from './schedule.request.dto';
+import PostScheduleRequestDto from './post.schedule.request.dto';
 
 export type{
-    ScheduleRequestDto
+    PostScheduleRequestDto
 }

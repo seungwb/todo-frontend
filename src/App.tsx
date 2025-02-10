@@ -1,11 +1,11 @@
 import React, {useState} from 'react';
 import './index.css';
-import Calendar from "./views/Calendar";
 import Authentication from "./views/Authentication";
 import {Routes, Route} from "react-router-dom";
-import {AUTH_PATH, MAIN_PATH, NOTICE_PATH} from "./constants";
+import {AUTH_PATH, CALENDAR_PATH, MAIN_PATH, NOTICE_PATH} from "./constants";
 import Container from './layouts/Container'
 import Notice from "./views/Notice";
+import Schedule from "./views/Schedule";
 
 
 //          component Application 컴포넌트          //
@@ -17,7 +17,7 @@ function App() {
     return (
         <Routes>
             <Route element = {<Container />}>
-                <Route path ={MAIN_PATH} element = {<Calendar/>}/>
+                <Route path ={CALENDAR_PATH} element = {<Schedule/>}/>
                 <Route path ={AUTH_PATH} element = {<Authentication/>}/>
                 <Route path = {NOTICE_PATH} element= {<Notice/>}/>
             </Route>

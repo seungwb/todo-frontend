@@ -1,12 +1,13 @@
 import React, {useState} from 'react';
-import CalendarListItem from '../../components/CalendarListItem';
+import CalendarListItem from '../../components/ScheduleListItem';
 import Header from '../../layouts/Header';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import ScheduleModal from '../../components/ScheduleModal';
+import ScheduleListItem from "../../components/ScheduleListItem";
 
-export default function Calendar(){
+export default function Schedule(){
     const [events, setEvents] = useState([]); // 일정 저장
     const [isModalOpen, setIsModalOpen] = useState(false); // 모달 열림 여부
     const [selectedDate, setSelectedDate] = useState(""); // 선택된 날짜
@@ -111,7 +112,7 @@ export default function Calendar(){
                     <p className="text-gray-500 text-center">일정이 없습니다.</p>
                 ) : (
                     filteredEvents.map((event, index) => (
-                        <CalendarListItem key={index} event={event}/>
+                        <ScheduleListItem key={index} event={event}/>
                     ))
                 )}
             </div>
