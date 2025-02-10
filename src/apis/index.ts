@@ -2,8 +2,8 @@ import {SignInRequestDto} from './request/auth';
 import axios from 'axios';
 import {SignInResponseDto, SignUpResponseDto} from './response/auth';
 import {ResponseDto} from './response';
-import {PostScheduleRequestDto} from "./request/calendar";
-import {PostScheduleResponseDto} from "./response/calendar";
+import {PostScheduleRequestDto} from "./request/schedule";
+import {PostScheduleResponseDto} from "./response/schedule";
 
 const DOMAIN = 'http://localhost:4000';
 

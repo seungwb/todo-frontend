@@ -1,8 +1,8 @@
 import React, {useEffect, useState} from 'react';
 import {postScheduleRequest} from "../../apis";
-import {PostScheduleRequestDto} from "../../apis/request/calendar";
+import {PostScheduleRequestDto} from "../../apis/request/schedule";
 import {useCookies} from "react-cookie";
-import {PostScheduleResponseDto} from "../../apis/response/calendar";
+import {PostScheduleResponseDto} from "../../apis/response/schedule";
 import {ResponseDto} from "../../apis/response";
 
 interface ScheduleModalProps {
