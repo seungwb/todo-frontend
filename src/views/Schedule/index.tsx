@@ -1,18 +1,28 @@
-import React, {useState} from 'react';
-import CalendarListItem from '../../components/ScheduleListItem';
-import Header from '../../layouts/Header';
+import React, {useEffect, useRef, useState} from 'react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import ScheduleModal from '../../components/ScheduleModal';
-import ScheduleListItem from "../../components/ScheduleListItem";
+import {ScheduleListItems} from "../../types/interface";
+import {getScheduleRequest} from "../../apis";
+import {useCookies} from "react-cookie";
+import {GetScheduleResponseDto} from "../../apis/response/schedule";
+import {ResponseDto} from "../../apis/response";
+import ScheduleListItem from '../../components/ScheduleListItem'
 
 export default function Schedule(){
     const [events, setEvents] = useState([]); // 일정 저장
     const [isModalOpen, setIsModalOpen] = useState(false); // 모달 열림 여부
     const [selectedDate, setSelectedDate] = useState(""); // 선택된 날짜
     const [filterType, setFilterType] = useState("today"); // 🟢 현재 선택된 필터 상태
-
+    const [cookies, setCookie] = useCookies();
+    const prevEventsRef = useRef(events);
+    useEffect(() => {
+        fetchEvents().then();
+    }, []);
+    useEffect(() => {
+        fetchEvents().then();
+    }, [events]);
     // 날짜 클릭 시 모달 열기
     const handleDateClick = (info: any) => {
         const clickedDateTime = new Date(info.date);
@@ -24,25 +34,60 @@ export default function Schedule(){
         const localISOTime = new Date(clickedDateTime.getTime() - clickedDateTime.getTimezoneOffset() * 60000)
             .toISOString()
             .slice(0, 16); // 🟢 24시간제 & "YYYY-MM-DDTHH:mm" 형식 적용
-        console.log(localISOTime);
 
         setSelectedDate(localISOTime); // 선택한 날짜 + 시간 저장
         setIsModalOpen(true);
     };
 
-    // 새 일정 저장
-    const handleSaveEvent = (newEvent: any) => {
+    const getScheduleResponse = (responseBody: GetScheduleResponseDto | ResponseDto | null)=> {
+        if(!responseBody){
+            alert('네트워크 이상입니다.');
+            return;
+        }
+        const { code } = responseBody;
+        if (code === 'DBE') alert('데이터베이스 오류입니다.');
 
-        setEvents([...events,
-            {
-                title: newEvent.title,
-                start: newEvent.start, // new Date()로 변환된 값
-                end: newEvent.end,     // new Date()로 변환된 값
-                backgroundColor: "rgba(99, 102, 241, 0.5)", // 연한 인디고 색상
-                borderColor: "rgb(99, 102, 241)", // 테두리 색상
-            },
-        ]);
+        if (code === 'VF' || code === 'NU')  alert('로그인이 필요한 기능입니다.');
+
+        if (code === 'AF') alert('인증에 실패하였습니다');
+        if (code!=='SU') return;
+        return responseBody;
     };
+
+    // 새 일정 저장
+    const fetchEvents = async () => {
+        const accessToken = cookies.accessToken;
+        const responseBody  = await getScheduleRequest(accessToken).then(getScheduleResponse);
+        if (!responseBody) return;
+
+        const {scheduleListItems} = responseBody as ScheduleListItems[];
+
+        const scheduleList: ScheduleListItems[] = scheduleListItems.map((event: any) => ({
+            ...event,
+            startDate: new Date(event.startDate),
+            endDate: new Date(event.endDate),
+            regDate: new Date(event.regDate)
+        }));
+
+        const formattedEvents = scheduleList.map((event) => ({
+            title: event.title,
+            start: event.startDate,
+            end: event.endDate,
+            backgroundColor: "rgba(99, 102, 241, 0.5)",
+            borderColor: "rgb(99, 102, 241)",
+            extendedProps: {
+                name: event.name,
+                location: event.location,
+                content: event.content,
+                regDate: event.regDate
+            },
+        }));
+
+        setEvents(formattedEvents); // FullCalendar에 새 일정 반영
+    };
+
+
+
 
     // 일정 필터링 함수
     const filteredEvents = events.filter((event) => {
@@ -81,7 +126,7 @@ export default function Schedule(){
                     className="w-full" //fullcalendar 라이브러리 사용 시 tailwindcss 사라지는 문제 해결
 
                 />
-                <ScheduleModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSave={handleSaveEvent}
+                <ScheduleModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}
                                selectedDate={selectedDate}/>
             </div>
             {/* 🟢 일정 필터 버튼 */}

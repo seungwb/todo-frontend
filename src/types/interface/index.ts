@@ -1,5 +1,5 @@
-import CalendarListItem from './calendar-list-item.interface';
+import ScheduleListItems from './schedule-list-items.interface';
 
 export type {
-    CalendarListItem
+    ScheduleListItems
 }

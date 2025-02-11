@@ -1,9 +1,7 @@
 import React from "react";
 
 // 날짜 포맷 변경 함수
-const formatDate = (date) => {
-    return new Date(date).toISOString().split("T")[0]; // YYYY-MM-DD 형식
-};
+
 
 //          component : Calendar List Item 컴포넌트          //
 export default function ScheduleListItem({ event }) {
@@ -14,8 +12,8 @@ export default function ScheduleListItem({ event }) {
 
             {/* 작성자 & 작성일 */}
             <div className="flex justify-between text-sm text-indigo-900 mt-3">
-                <div className="font-semibold">작성자: 관리자</div>
-                <div className="font-semibold">작성일: {formatDate(event.start)}</div>
+                <div className="font-semibold">작성자: {event.extendedProps.name}</div>
+                <div className="font-semibold">작성일: {new Date(event.extendedProps.regDate).toLocaleString()}</div>
             </div>
 
             {/* 일정 정보 */}

@@ -11,7 +11,7 @@ interface ScheduleModalProps {
     selectedDate: string;
 }
 
-const ScheduleModal: React.FC<ScheduleModalProps> = ({ isOpen, onClose, onSave, selectedDate  }) => {
+const ScheduleModal: React.FC<ScheduleModalProps> = ({ isOpen, onClose, selectedDate  }) => {
     const [formData, setFormData] = useState({
         title: "",
         content: "",
@@ -42,21 +42,21 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({ isOpen, onClose, onSave, 
     const scheduleResponse = (responseBody: PostScheduleResponseDto | ResponseDto | null) =>{
         if(!responseBody){
             alert('네트워크 이상입니다.')
+            return;
         }
-        return;
         const { code } = responseBody;
-        if (code === 'DBE') alert('데이터베이스 오류입니다.')
+        if (code === 'DBE') alert('데이터베이스 오류입니다.');
 
-        if (code === 'VF' || code === 'NU')  alert('로그인이 필요한 기능입니다.')
+        if (code === 'VF' || code === 'NU')  alert('로그인이 필요한 기능입니다.');
 
-        if (code === 'AF') alert('인증에 실패하였습니다')
+        if (code === 'AF') alert('인증에 실패하였습니다');
         if (code!=='SU') return;
-        onSave();
+
         alert('일정이 추가 되었습니다!');
 
     }
 //          event handler: 작성 버튼 이벤트 처리          //
-    const onSubmitButtonHandler = async () => {
+    const onSubmitButtonHandler =  () => {
         const accessToken = cookies.accessToken;
         if(!accessToken) {
             alert('로그인이 필요한 기능입니다.');
@@ -70,7 +70,7 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({ isOpen, onClose, onSave, 
             , startDate: new Date(formData.startDate)
             , endDate: new Date(formData.endDate)
         };
-        await postScheduleRequest(requestBody, accessToken).then(scheduleResponse);
+        postScheduleRequest(requestBody, accessToken).then(scheduleResponse);
         onClose();
     };
 

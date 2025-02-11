@@ -3,7 +3,7 @@ import axios from 'axios';
 import {SignInResponseDto, SignUpResponseDto} from './response/auth';
 import {ResponseDto} from './response';
 import {PostScheduleRequestDto} from "./request/schedule";
-import {PostScheduleResponseDto} from "./response/schedule";
+import {GetScheduleResponseDto, PostScheduleResponseDto} from "./response/schedule";
 
 const DOMAIN = 'http://localhost:4000';
 
@@ -48,6 +48,18 @@ export const postScheduleRequest = async (requestBody: PostScheduleRequestDto, a
     const result = await axios.post(SCHEDULE_URL(), requestBody, authorization(accessToken))
         .then(response => {
             const responseBody: PostScheduleResponseDto = response.data;
+            return responseBody;
+        }).catch(error => {
+            const responseBody: ResponseDto = error.response.data;
+            return responseBody;
+        })
+    return result;
+}
+
+export const getScheduleRequest = async (accessToken:string) => {
+    const result = await axios.get(SCHEDULE_URL(), authorization(accessToken))
+        .then(response => {
+            const responseBody: GetScheduleResponseDto = response.data;
             return responseBody;
         }).catch(error => {
             const responseBody: ResponseDto = error.response.data;
