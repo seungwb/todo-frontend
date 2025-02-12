@@ -20,9 +20,7 @@ export default function Schedule(){
     useEffect(() => {
         fetchEvents().then();
     }, []);
-    useEffect(() => {
-        fetchEvents().then();
-    }, [events]);
+
     // 날짜 클릭 시 모달 열기
     const handleDateClick = (info: any) => {
         const clickedDateTime = new Date(info.date);
@@ -76,6 +74,7 @@ export default function Schedule(){
             backgroundColor: "rgba(99, 102, 241, 0.5)",
             borderColor: "rgb(99, 102, 241)",
             extendedProps: {
+                id: event.id,
                 name: event.name,
                 location: event.location,
                 content: event.content,
@@ -126,7 +125,9 @@ export default function Schedule(){
                     className="w-full" //fullcalendar 라이브러리 사용 시 tailwindcss 사라지는 문제 해결
 
                 />
-                <ScheduleModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}
+                <ScheduleModal isOpen={isModalOpen}
+                               onClose={() => setIsModalOpen(false)}
+                               onSave = {fetchEvents}
                                selectedDate={selectedDate}/>
             </div>
             {/* 🟢 일정 필터 버튼 */}
@@ -157,7 +158,10 @@ export default function Schedule(){
                     <p className="text-gray-500 text-center">일정이 없습니다.</p>
                 ) : (
                     filteredEvents.map((event, index) => (
-                        <ScheduleListItem key={index} event={event}/>
+                        <ScheduleListItem key={index}
+                                          event={event}
+                                          onSave = {fetchEvents}
+                        />
                     ))
                 )}
             </div>

@@ -9,9 +9,10 @@ interface ScheduleModalProps {
     isOpen: boolean;
     onClose: () => void;
     selectedDate: string;
+    onSave: () => void;
 }
 
-const ScheduleModal: React.FC<ScheduleModalProps> = ({ isOpen, onClose, selectedDate  }) => {
+const ScheduleModal: React.FC<ScheduleModalProps> = ({ isOpen, onClose, onSave,selectedDate  }) => {
     const [formData, setFormData] = useState({
         title: "",
         content: "",
@@ -51,8 +52,8 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({ isOpen, onClose, selected
 
         if (code === 'AF') alert('인증에 실패하였습니다');
         if (code!=='SU') return;
-
         alert('일정이 추가 되었습니다!');
+        onSave();
 
     }
 //          event handler: 작성 버튼 이벤트 처리          //
@@ -71,6 +72,7 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({ isOpen, onClose, selected
             , endDate: new Date(formData.endDate)
         };
         postScheduleRequest(requestBody, accessToken).then(scheduleResponse);
+
         onClose();
     };
 

@@ -2,7 +2,7 @@ import React from 'react';
 import logo from '../../assets/logo.svg';
 import loginLogo from '../../assets/login-logo.svg'
 import {useNavigate} from "react-router-dom";
-import {AUTH_PATH, NOTICE_PATH} from "../../constants";
+import {AUTH_PATH, CALENDAR_PATH, NOTICE_PATH} from "../../constants";
 
 export default function Header(){
     // 네비게이터 함수
@@ -16,7 +16,7 @@ export default function Header(){
                 </div>
                 <div
                     className="flex justify-between items-center text-white text-lg font-semibold cursor-pointer"
-                    onClick={() => navigator("/")}
+                    onClick={() => navigator(CALENDAR_PATH)}
                 >
                     {'일정관리'}
                 </div>

@@ -1,4 +1,5 @@
 export default interface ScheduleListItems {
+    id: number;
     name : string;
     title : string;
     content : string;
