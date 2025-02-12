@@ -16,7 +16,6 @@ export default function Schedule(){
     const [selectedDate, setSelectedDate] = useState(""); // 선택된 날짜
     const [filterType, setFilterType] = useState("today"); // 🟢 현재 선택된 필터 상태
     const [cookies, setCookie] = useCookies();
-    const prevEventsRef = useRef(events);
     useEffect(() => {
         fetchEvents().then();
     }, []);
@@ -32,6 +31,8 @@ export default function Schedule(){
         const localISOTime = new Date(clickedDateTime.getTime() - clickedDateTime.getTimezoneOffset() * 60000)
             .toISOString()
             .slice(0, 16); // 🟢 24시간제 & "YYYY-MM-DDTHH:mm" 형식 적용
+        console.log('=========클릭한 시간=========');
+        console.log(localISOTime);
 
         setSelectedDate(localISOTime); // 선택한 날짜 + 시간 저장
         setIsModalOpen(true);

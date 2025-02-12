@@ -1,5 +1,8 @@
 
 export default interface UpdateScheduleRequestDto{
-    id: number;
-    accessToken: string;
+    title: string;
+    content: string | null;
+    location: string | null;
+    startDate: Date;
+    endDate: Date;
 }

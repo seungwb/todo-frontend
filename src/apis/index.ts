@@ -2,7 +2,7 @@ import {SignInRequestDto} from './request/auth';
 import axios from 'axios';
 import {SignInResponseDto, SignUpResponseDto} from './response/auth';
 import {ResponseDto} from './response';
-import {PostScheduleRequestDto} from "./request/schedule";
+import {PostScheduleRequestDto, UpdateScheduleRequestDto} from "./request/schedule";
 import {
     DeleteScheduleResponseDto,
     GetScheduleResponseDto,
@@ -87,8 +87,8 @@ export const deleteScheduleRequest = async (id: number, accessToken: string)=>{
     return result;
 }
 
-export const updateScheduleRequest = async (id: number, accessToken: string) =>{
-    const result = await axios.put(SCHEDULE_ID_URL(id), authorization(accessToken))
+export const updateScheduleRequest = async (id: number, requestBody: UpdateScheduleRequestDto, accessToken: string) =>{
+    const result = await axios.put(SCHEDULE_ID_URL(id), requestBody, authorization(accessToken))
         .then(response =>{
             const responseBody: UpdateScheduleResponseDto = response.data;
             return responseBody
