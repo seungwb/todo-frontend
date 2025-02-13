@@ -33,8 +33,6 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({ isOpen, onClose, onSave,s
 
     //          effect : 선택한 날짜, 시간 자동 반영          //
     useEffect(() => {
-        console.log('========모달=========');
-        console.log(initialData);
         if (initialData) {
             // 🔥 기존 데이터가 있으면 수정 모드
             setFormData({
@@ -46,7 +44,6 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({ isOpen, onClose, onSave,s
             });
         } else if (selectedDate) {
             // 🔥 새로운 일정 추가 시
-            console.log('설마 여기도 실행?')
             setFormData((prevFormData) => ({
                 ...prevFormData,
                 startDate: selectedDate,
@@ -87,7 +84,6 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({ isOpen, onClose, onSave,s
             onClose();
             return;
         }
-
         const requestBody: PostScheduleRequestDto = {
             title : formData.title
             , content : formData.content
@@ -97,6 +93,13 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({ isOpen, onClose, onSave,s
         };
         postScheduleRequest(requestBody, accessToken).then(scheduleResponse);
 
+        setFormData({
+            title: "",
+            content: "",
+            location: "",
+            startDate: "",
+            endDate: ""
+        })
         onClose();
     };
 

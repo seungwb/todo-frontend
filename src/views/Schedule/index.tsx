@@ -121,10 +121,10 @@ export default function Schedule(){
                 <FullCalendar
                     plugins={[dayGridPlugin, interactionPlugin]}
                     initialView="dayGridMonth"
+                    timeZone= 'local'
                     events={events} // 저장된 일정 표시
                     dateClick={handleDateClick} // 날짜 클릭 시 모달 열기
                     className="w-full" //fullcalendar 라이브러리 사용 시 tailwindcss 사라지는 문제 해결
-
                 />
                 <ScheduleModal isOpen={isModalOpen}
                                onClose={() => setIsModalOpen(false)}
