@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
-import {getTodayScheduleRequest, getWeatherRequest} from "../apis";
+import {getTodayScheduleRequest, getWeatherRequest, getWeeklyScheduleRequest} from "../apis";
 import {ScheduleListItems} from "../types/interface";
 import {useCookies} from "react-cookie";
+import {GetTodayScheduleIndexResponseDto, ResponseDto} from "../apis/response";
 
 export default function IndexPage() {
     const [cookies, setCookie] = useCookies();
@@ -23,6 +24,7 @@ export default function IndexPage() {
     useEffect(() => {
         fetchWeatherEvents();
         fetchTodayEvents();
+        fetchWeeklyEvents();
     }, []);
 
     const getTodayDate = (): string => {
@@ -49,16 +51,29 @@ export default function IndexPage() {
         const responseBody = await getWeatherRequest(); // API 호출
         setWeather(responseBody);
     }
+    const getTodayScheduleResponse = (responseBody: GetTodayScheduleIndexResponseDto | ResponseDto | null)=> {
+        if(!responseBody){
+            alert('네트워크 이상입니다.');
+            return;
+        }
+        const { code } = responseBody;
+        if (code === 'DBE') alert('데이터베이스 오류입니다.');
+
+        if (code === 'VF' || code === 'NU')  alert('로그인이 필요한 기능입니다.');
+
+        if (code === 'AF') alert('인증에 실패하였습니다');
+        if (code!=='SU') return;
+        return responseBody;
+    };
     const fetchTodayEvents = async () =>{
         const accessToken = cookies.accessToken;
         if(!accessToken) return;
         //                 fetch: 오늘 일정          //
         const today = getTodayDate();
-        const responseBody = await getTodayScheduleRequest(today, accessToken)
-            .then();
-        const {scheduleListItems} = responseBody as ScheduleListItems[];
+        const responseBody = await getTodayScheduleRequest(today, accessToken).then(getTodayScheduleResponse);
+        const {todayScheduleListItems} = responseBody as ScheduleListItems[];
 
-        const scheduleList: ScheduleListItems[] = scheduleListItems.map((e: any) => ({
+        const scheduleList: ScheduleListItems[] = todayScheduleListItems.map((e: any) => ({
             ...e,
             startDate: new Date(e.startDate).toISOString().split("T")[0], // 'YYYY-MM-DD' 변환
             endDate: new Date(e.endDate).toISOString().split("T")[0],
@@ -66,6 +81,25 @@ export default function IndexPage() {
         }));
         setTodaySchedules(scheduleList);
 
+    }
+
+    const fetchWeeklyEvents = async () =>{
+        const accessToken = cookies.accessToken;
+        if(!accessToken) return;
+        //                 fetch: 오늘 일정          //
+        const {start} = getThisWeekRange()
+        const {end} = getThisWeekRange()
+        const responseBody = await getWeeklyScheduleRequest(start, end, accessToken)
+            .then();
+        const {weeklyScheduleListItems} = responseBody as ScheduleListItems[];
+
+        const scheduleList: ScheduleListItems[] = weeklyScheduleListItems.map((e: any) => ({
+            ...e,
+            startDate: new Date(e.startDate).toISOString().split("T")[0], // 'YYYY-MM-DD' 변환
+            endDate: new Date(e.endDate).toISOString().split("T")[0],
+            regDate: new Date(e.regDate).toISOString().split("T")[0]
+        }));
+        setThisWeekSchedules(scheduleList);
     }
 
     return (
@@ -84,11 +118,12 @@ export default function IndexPage() {
 
             {/* 📝 오늘의 일정 */}
             <section className="bg-white p-4 rounded-2xl shadow-md">
-                <h2 className="text-lg font-semibold">📝 오늘의 일정</h2>
-                <ul className="mt-2 space-y-2">
-                    {todaySchedules.map((todaySchedules, index) => (
-                        <li key={index} className="flex items-center text-gray-800">
-                            📌 <span className="ml-2">{todaySchedules.startDate} - {todaySchedules.title}</span>
+                <h2 className="text-lg font-semibold">📝 오늘의 일정 ({getTodayDate()})</h2>
+                <ul className="mt-2 space-y-3">
+                    {todaySchedules.map((schedule, index) => (
+                        <li key={index} className="text-gray-800">
+                            📌 <span className="font-medium">{schedule.startDate} - {schedule.endDate}</span>
+                            <div className="ml-6 text-gray-600">{schedule.title}</div>
                         </li>
                     ))}
                 </ul>
@@ -120,8 +155,16 @@ export default function IndexPage() {
 
             {/* 🔥 주간 일정 요약 */}
             <section className="bg-yellow-100 p-4 rounded-2xl shadow-md col-span-1 md:col-span-2">
-                <h2 className="text-lg font-semibold">🔥 이번 주 일정</h2>
-                <p className="text-gray-800 mt-2">📅 이번 주 총 {events.length}개의 일정 있음</p>
+                <h2 className="text-lg font-semibold">🔥 이번 주 일정 ({getThisWeekRange().start} - {getThisWeekRange().end})</h2>
+                <p className="text-gray-800 mt-2">📅 이번 주 총 {thisWeekSchedules.length}개의 일정 있음</p>
+                <ul className="mt-3 space-y-3">
+                    {thisWeekSchedules.map((schedule, index) => (
+                        <li key={index} className="text-gray-800">
+                            📅 <span className="font-medium">{schedule.startDate} - {schedule.endDate}</span>
+                            <div className="ml-6 text-gray-600">{schedule.title}</div>
+                        </li>
+                    ))}
+                </ul>
             </section>
         </div>
     );

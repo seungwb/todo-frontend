@@ -108,7 +108,7 @@ export default function Authentication() {
                     />
                     <div
                         onClick={onSignInButtonClickHandler}
-                        className="w-full bg-blue-500 justify-center items-center hover:bg-blue-600 text-white font-bold py-2 px-4 rounded mt-4"
+                        className="w-full bg-blue-500 flex justify-center items-center hover:bg-blue-600 text-white font-bold py-2 px-4 rounded mt-4 cursor-pointer"
                     >
                         로그인
                     </div>
@@ -233,7 +233,7 @@ export default function Authentication() {
             //          render: sign up card 렌더링          //
         return (
             <div className="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md">
-                <div className="text-2xl font-semibold text-center mb-4">로그인</div>
+                <div className="text-2xl font-semibold text-center mb-4">회원가입</div>
                 <InputBox
                     ref={nameRef}
                     label="이름"
@@ -296,13 +296,13 @@ export default function Authentication() {
                 />
                 <div
                     onClick={onSignUpButtonClickHandler}
-                    className="w-full bg-blue-500 justify-center items-center hover:bg-blue-600 text-white font-bold py-2 px-4 rounded mt-4"
+                    className="w-full bg-blue-500 flex justify-center items-center hover:bg-blue-600 text-white font-bold py-2 px-4 rounded mt-4 cursor-pointer"
                 >
                     회원가입
                 </div>
                 <p className="text-center text-sm mt-4">
                     이미 계정이 있으신가요?{" "}
-                    <span className="text-blue-500 cursor-pointer" onClick={() => setView("sign-in")}>
+                    <span className="text-blue-500 cursor-pointer " onClick={() => setView("sign-in")}>
                             로그인
                         </span>
                 </p>

@@ -20,17 +20,6 @@ const authorization = (accessToken: string) => {
     return { headers: { Authorization: `Bearer ${accessToken}` } }
 };
 
-
-
-
-
-
-
-
-
-
-
-
 const SIGN_IN_URL = () => `${API_DOMAIN}/auth/sign-in`;
 
 export const signInRequest = async (requestBody: SignInRequestDto) =>{
@@ -125,9 +114,9 @@ export const getTodayScheduleRequest = async (today:string, accessToken:string) 
         })
     return result;
 }
-
-export const getWeeklyScheduleRequest = async (accessToken:string) => {
-    const result = await axios.get(SCHEDULE_URL(), authorization(accessToken))
+const WEEKLY_SCHEDULE_URL = (start, end) =>`${API_DOMAIN}/schedule/weekly?start=${start}&end=${end}`;
+export const getWeeklyScheduleRequest = async (start: string, end: string, accessToken:string) => {
+    const result = await axios.get(WEEKLY_SCHEDULE_URL(start, end), authorization(accessToken))
         .then(response => {
             const responseBody: GetWeeklyScheduleIndexResponseDto = response.data;
             return responseBody;
