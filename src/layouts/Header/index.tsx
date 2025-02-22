@@ -1,8 +1,7 @@
 import React, {useState} from 'react';
 import logo from '../../assets/logo.svg';
-import loginLogo from '../../assets/login-logo.svg'
 import {useNavigate} from "react-router-dom";
-import {AUTH_PATH, CALENDAR_PATH, MAIN_PATH, NOTICE_PATH} from "../../constants";
+import {AUTH_PATH, CALENDAR_PATH, MAIN_PATH, NOTICE_PATH, TODO_PATH} from "../../constants";
 import {deleteCookie, getCookie} from "../../utils/cookie";
 
 export default function Header(){
@@ -39,6 +38,12 @@ export default function Header(){
                     onClick={() => navigator(CALENDAR_PATH)}
                 >
                     {'일정관리'}
+                </div>
+                <div
+                    className="flex justify-between items-center text-white text-lg font-semibold cursor-pointer"
+                    onClick={() => navigator(TODO_PATH)}
+                >
+                    {'할일 목록'}
                 </div>
                 <div
                     className="flex justify-between items-center text-white text-lg font-semibold cursor-pointer"

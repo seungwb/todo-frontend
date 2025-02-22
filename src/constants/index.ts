@@ -3,3 +3,4 @@ export const AUTH_PATH = '/auth';
 export const NOTICE_PATH = '/notice';
 
 export const CALENDAR_PATH = '/schedule'
+export const TODO_PATH = '/todo'
