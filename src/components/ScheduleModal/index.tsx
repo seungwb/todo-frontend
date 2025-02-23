@@ -26,7 +26,7 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({ isOpen, onClose, onSave,s
         content: "",
         location: "",
         startDate: "",
-        endDate: "",
+        endDate: ""
     });
     const [cookies, setCookie] = useCookies();
     
