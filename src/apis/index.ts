@@ -9,6 +9,8 @@ import {
     PostScheduleResponseDto,
     UpdateScheduleResponseDto
 } from "./response/schedule";
+import {PostTodoRequestDto} from "./request/todo";
+import {PostTodoResponseDto} from "./response/todo";
 
 const DOMAIN = 'http://localhost:4000';
 
@@ -137,4 +139,18 @@ export const getWeatherRequest = async ()=>{
         console.error("날씨 정보를 불러오지 못했습니다.", error);
         return null; // 에러 발생 시 null 반환
     }
+}
+
+const TODO_URL = () => `${API_DOMAIN}/todo`;
+
+export const postTodoRequest = async(requestBody: PostTodoRequestDto, accessToken: string) =>{
+    const result = await axios.post(TODO_URL(), requestBody, authorization(accessToken))
+        .then(response => {
+            const responseBody: PostTodoResponseDto = response.data;
+            return responseBody;
+        }).catch(error => {
+            const responseBody: ResponseDto = error.response.data;
+            return responseBody;
+        })
+    return result;
 }
