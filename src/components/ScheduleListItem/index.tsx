@@ -38,7 +38,7 @@ export default function ScheduleListItem({ event, onSave }) {
     }
 
     const onDeleteButtonHandler = () =>{
-        const id = event.extendedProps.id
+        const id = event.extendedProps.id;
         const accessToken = cookies.accessToken;
 
         deleteScheduleRequest(id, accessToken).then(deleteScheduleResponse);

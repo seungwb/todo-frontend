@@ -29,21 +29,17 @@ export default function Todo(){
 
     useEffect(() => {
 
-        fetchEvents().then(todoListItems => {
-            console.log(todoListItems);
-            setTodos(todoListItems);
-        });
+        fetchEvents().then();
     }, []);
 
-    async function fetchEvents(){
+    const fetchEvents = async () =>{
         const accessToken = cookies.accessToken;
         const responseBody = await getTodoRequest(accessToken).then(getTodoResponse);
 
         if(!responseBody) return;
 
         const { todoListItems } = responseBody as TodoListItems[];
-
-        return todoListItems;
+        setTodos(todoListItems);
     }
 
 

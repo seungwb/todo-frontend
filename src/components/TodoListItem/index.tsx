@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import {UpdateStateTodoResponseDto} from "../../apis/response/todo";
+import {DeleteTodoResponseDto, UpdateStateTodoResponseDto} from "../../apis/response/todo";
 import {ResponseDto} from "../../apis/response";
 import {useCookies} from "react-cookie";
 import {UpdateStateTodoRequestDto} from "../../apis/request/todo";
-import {updateStateTodoRequest} from "../../apis";
+import {deleteTodoRequest, updateStateTodoRequest} from "../../apis";
 import TodoModal from "../TodoModal";
 export default function TodoListItem({ todo, onSave }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -58,6 +58,28 @@ export default function TodoListItem({ todo, onSave }) {
         })
         setIsModalOpen(true);
     }
+    const deleteTodoResponse = (responseBody: DeleteTodoResponseDto | ResponseDto | null) =>{
+        if(!responseBody){
+            alert('네트워크 이상입니다.')
+            return;
+        }
+        const { code } = responseBody;
+        if (code === 'DBE') alert('데이터베이스 오류입니다.');
+
+        if (code === 'VF' || code === 'NU')  alert('로그인이 필요한 기능입니다.');
+
+        if (code === 'AF') alert('인증에 실패하였습니다');
+        if (code!=='SU') return;
+
+        alert('삭제 되었습니다.')
+        onSave();
+    }
+    const onDeleteButtonHandler = () =>{
+        const id = todo.id;
+        const accessToken = cookies.accessToken;
+
+        deleteTodoRequest(id,accessToken).then(deleteTodoResponse);
+    }
 
 
 
@@ -88,7 +110,7 @@ export default function TodoListItem({ todo, onSave }) {
                     </div>
                 )}
                 <button
-                    onClick={onUpdateButtonHandler}
+                    onClick={onDeleteButtonHandler}
                     className="bg-red-500 text-white py-1 px-3 rounded-md hover:bg-red-600 transition-colors">삭제</button>
 
 

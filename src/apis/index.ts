@@ -11,6 +11,7 @@ import {
 } from "./response/schedule";
 import {PostTodoRequestDto, UpdateStateTodoRequestDto, UpdateTodoRequestDto} from "./request/todo";
 import {
+    DeleteTodoResponseDto,
     GetTodoResponseDto,
     PostTodoResponseDto,
     UpdateStateTodoResponseDto,
@@ -189,10 +190,23 @@ export const updateStateTodoRequest = async (id: number, requestBody: UpdateStat
 const TODO_UPDATE_URL = (id) => `${API_DOMAIN}/todo/${id}`;
 
 export const updateTodoRequest = async (id: number, requestBody: UpdateTodoRequestDto, accessToken: string)=>{
-    console.log(requestBody);
     const result = await axios.put(TODO_UPDATE_URL(id), requestBody, authorization(accessToken))
         .then(response =>{
             const responseBody: UpdateTodoResponseDto = response.data;
+            return responseBody;
+        }).catch(error=>{
+            const responseBody: ResponseDto = error.response.data;
+            return responseBody;
+        })
+    return result;
+}
+
+const TODO_DELETE_URL = (id) => `${API_DOMAIN}/todo/${id}`;
+
+export const deleteTodoRequest = async (id: number, accessToken: string) =>{
+    const result = await axios.delete(TODO_DELETE_URL(id), authorization(accessToken))
+        .then(response =>{
+            const responseBody: DeleteTodoResponseDto = response.data;
             return responseBody;
         }).catch(error=>{
             const responseBody: ResponseDto = error.response.data;
