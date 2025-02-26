@@ -47,15 +47,6 @@ export default function Todo(){
     }
 
 
-
-    const toggleComplete = (id) => {
-        setTodos(prevTodos =>
-            prevTodos.map(todo =>
-                todo.id === id ? { ...todo, state: !todo.state } : todo
-            )
-        );
-    };
-
     const deleteTodo = (id) => {
         /*setTodos(todos.filter(todo => todo.id !== id));*/
     };
@@ -66,9 +57,10 @@ export default function Todo(){
             <button onClick={() => setIsModalOpen(true)} className="bg-blue-600 text-white rounded-md w-full max-w-xl h-12 flex items-center justify-center text-2xl hover:bg-blue-700 transition-colors mb-6">+</button>
             <TodoModal
                 isOpen={isModalOpen}
+                onSave = {fetchEvents}
                 onClose={() => setIsModalOpen(false)}
             />
-            <div className="w-full max-w-xl grid gap-4 relative z-10">
+            <div className="w-full max-w-xl grid gap-4 relative">
                 {todos.length === 0 ? (
                     <p className="text-gray-500 text-center">할일이 없습니다.</p>
                     ): (
@@ -76,7 +68,7 @@ export default function Todo(){
                     <TodoListItem
                         key={todo.id}
                         todo={todo}
-                        toggleComplete={toggleComplete}
+                        onSave = {fetchEvents}
                         deleteTodo={deleteTodo}/>
                     )
                 ))}

@@ -1,9 +1,9 @@
 import React, {useEffect, useState} from 'react';
 import {useCookies} from "react-cookie";
-import {PostTodoResponseDto} from "../../apis/response/todo";
+import {PostTodoResponseDto, UpdateTodoResponseDto} from "../../apis/response/todo";
 import {ResponseDto} from "../../apis/response";
-import {PostTodoRequestDto} from "../../apis/request/todo";
-import {postTodoRequest} from "../../apis";
+import {PostTodoRequestDto, UpdateTodoRequestDto} from "../../apis/request/todo";
+import {postTodoRequest, updateTodoRequest} from "../../apis";
 
 interface TodoModalProps {
     isOpen: boolean;
@@ -17,7 +17,7 @@ interface TodoModalProps {
 }
 
 // TodoModal 컴포넌트: + 버튼 클릭 시 모달 형태로 입력란 표시
-const TodoModal: React.FC<TodoModalProps> = ({ isOpen, onClose, title, content, initialData }) =>{
+const TodoModal: React.FC<TodoModalProps> = ({ isOpen, onSave, onClose, initialData }) =>{
 
     const [formData, setFormData] = useState({
         title: "",
@@ -58,10 +58,11 @@ const TodoModal: React.FC<TodoModalProps> = ({ isOpen, onClose, title, content, 
         if (code === 'AF') alert('인증에 실패하였습니다');
         if (code!=='SU') return;
 
-        alert('할일이 추가 되었습니다.')
+        alert('할일이 추가 되었습니다.');
+        onSave();
     }
 
-    const onUpdateButtonHandler = () =>{
+    const onSubmitButtonHandler = () =>{
         const accessToken = cookies.accessToken;
         if(!accessToken){
             alert('로그인이 필요한 기능입니다.');
@@ -78,6 +79,43 @@ const TodoModal: React.FC<TodoModalProps> = ({ isOpen, onClose, title, content, 
            title: ""
            , content: ""
         });
+        onClose();
+    }
+    const updateTodoResponse = (responseBody: UpdateTodoResponseDto | ResponseDto | null)=>{
+        if(!responseBody){
+            alert('네트워크 이상입니다.')
+            return;
+        }
+        const { code } = responseBody;
+        if (code === 'DBE') alert('데이터베이스 오류입니다.');
+
+        if (code === 'VF' || code === 'NU')  alert('로그인이 필요한 기능입니다.');
+
+        if (code === 'AF') alert('인증에 실패하였습니다');
+        if (code!=='SU') return;
+
+        alert('할일이 수정 되었습니다.');
+        onSave();
+    }
+
+    const onUpdateButtonHandler = () =>{
+        const accessToken = cookies.accessToken;
+        if(!accessToken){
+            alert('로그인이 필요한 기능입니다.');
+            onClose();
+            return;
+        }
+        if(!initialData){
+            alert('이미 삭제된 일정입니다.');
+            return;
+        } else{
+            const requestBody: UpdateTodoRequestDto = {
+                title: formData.title
+                , content: formData.content
+            };
+            updateTodoRequest(initialData.id, requestBody, accessToken).then(updateTodoResponse);
+
+        }
         onClose();
     }
 
@@ -103,7 +141,8 @@ const TodoModal: React.FC<TodoModalProps> = ({ isOpen, onClose, title, content, 
                     className="border border-gray-300 p-3 w-full mb-4 rounded-lg focus:outline-none focus:border-gray-500 transition-colors"></textarea>
                 <div className="flex justify-end space-x-2">
                     <button onClick={onClose} className="bg-gray-500 text-white py-2 px-4 rounded-md hover:bg-gray-600 transition-colors">취소</button>
-                    <button onClick={onUpdateButtonHandler} className="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors">추가하기</button>
+                    <button onClick={initialData ? onUpdateButtonHandler : onSubmitButtonHandler}
+                            className="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors">{initialData ? "수정" : "추가"}</button>
                 </div>
             </div>
         </div>

@@ -9,8 +9,13 @@ import {
     PostScheduleResponseDto,
     UpdateScheduleResponseDto
 } from "./response/schedule";
-import {PostTodoRequestDto} from "./request/todo";
-import {GetTodoResponseDto, PostTodoResponseDto} from "./response/todo";
+import {PostTodoRequestDto, UpdateStateTodoRequestDto, UpdateTodoRequestDto} from "./request/todo";
+import {
+    GetTodoResponseDto,
+    PostTodoResponseDto,
+    UpdateStateTodoResponseDto,
+    UpdateTodoResponseDto
+} from "./response/todo";
 
 const DOMAIN = 'http://localhost:4000';
 
@@ -161,6 +166,35 @@ export const getTodoRequest = async (accessToken: string) =>{
             const responseBody: GetTodoResponseDto = response.data;
             return responseBody;
         }).catch(error => {
+            const responseBody: ResponseDto = error.response.data;
+            return responseBody;
+        })
+    return result;
+}
+
+const TODO_UPDATE_STATE_URL = (id) => `${API_DOMAIN}/todo/toggle/${id}`;
+export const updateStateTodoRequest = async (id: number, requestBody: UpdateStateTodoRequestDto, accessToken: string)=>{
+    console.log(requestBody);
+    const result = await axios.put(TODO_UPDATE_STATE_URL(id), requestBody, authorization(accessToken))
+        .then(response =>{
+            const responseBody: UpdateStateTodoResponseDto = response.data;
+            return responseBody;
+        }).catch(error=>{
+            const responseBody: ResponseDto = error.response.data;
+            return responseBody;
+        })
+    return result;
+}
+
+const TODO_UPDATE_URL = (id) => `${API_DOMAIN}/todo/${id}`;
+
+export const updateTodoRequest = async (id: number, requestBody: UpdateTodoRequestDto, accessToken: string)=>{
+    console.log(requestBody);
+    const result = await axios.put(TODO_UPDATE_URL(id), requestBody, authorization(accessToken))
+        .then(response =>{
+            const responseBody: UpdateTodoResponseDto = response.data;
+            return responseBody;
+        }).catch(error=>{
             const responseBody: ResponseDto = error.response.data;
             return responseBody;
         })
