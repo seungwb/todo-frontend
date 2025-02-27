@@ -1,28 +1,26 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { getTodayScheduleRequest, getWeatherRequest, getWeeklyScheduleRequest } from "../apis"
+import {getTodayScheduleRequest, getTodoRequest, getWeatherRequest, getWeeklyScheduleRequest} from "../apis"
 import type { ScheduleListItems } from "../types/interface"
 import { useCookies } from "react-cookie"
 import type { GetTodayScheduleIndexResponseDto, ResponseDto } from "../apis/response"
 import { motion } from "framer-motion"
 import { Sun, Calendar, CheckSquare, AlertTriangle } from "lucide-react"
+import type {GetTodoResponseDto} from "../apis/response/todo";
 
 export default function IndexPage() {
     const [cookies] = useCookies()
     const [weather, setWeather] = useState(null)
     const [todaySchedules, setTodaySchedules] = useState<ScheduleListItems[]>([])
     const [thisWeekSchedules, setThisWeekSchedules] = useState<ScheduleListItems[]>([])
-    const [todos, setTodos] = useState([
-        { text: "문서 작성", done: false },
-        { text: "발표 준비", done: false },
-        { text: "코드 리뷰", done: false },
-    ])
+    const [todos, setTodos] = useState([])
 
     useEffect(() => {
         fetchWeatherEvents()
         fetchTodayEvents()
         fetchWeeklyEvents()
+        fetchTodoEvents()
     }, [])
 
     const getTodayDate = (): string => {
@@ -65,7 +63,6 @@ export default function IndexPage() {
         const accessToken = cookies.accessToken
         if (!accessToken) return
         const today = new Date().toISOString().split("T")[0]
-        console.log(today);
         const responseBody = await getTodayScheduleRequest(today, accessToken).then(getTodayScheduleResponse)
         if (responseBody && "todayScheduleListItems" in responseBody) {
             const scheduleList: ScheduleListItems[] = responseBody.todayScheduleListItems.map((e: any) => ({
@@ -82,8 +79,6 @@ export default function IndexPage() {
         const accessToken = cookies.accessToken
         if (!accessToken) return
         const { start, end } = getThisWeekRange()
-        console.log('start'+start)
-        console.log('end'+end)
         const responseBody = await getWeeklyScheduleRequest(start, end, accessToken)
         if (responseBody && "weeklyScheduleListItems" in responseBody) {
             const scheduleList: ScheduleListItems[] = responseBody.weeklyScheduleListItems.map((e: any) => ({
@@ -94,6 +89,31 @@ export default function IndexPage() {
             }))
             setThisWeekSchedules(scheduleList)
         }
+    }
+
+    const getTodoResponse = (responseBody: GetTodoResponseDto | ResponseDto | null) => {
+        if (!responseBody) {
+            alert("네트워크 이상입니다.")
+            return
+        }
+        const { code } = responseBody
+        if (code === "DBE") alert("데이터베이스 오류입니다.")
+        if (code === "VF" || code === "NU") alert("로그인이 필요한 기능입니다.")
+        if (code === "AF") alert("인증에 실패하였습니다")
+        if (code !== "SU") return
+        return responseBody
+    }
+
+    const fetchTodoEvents = async () => {
+        const accessToken = cookies.accessToken
+        const responseBody = await getTodoRequest(accessToken).then(getTodoResponse)
+
+        if (!responseBody) {
+            return
+        }
+
+        const { todoListItems } = responseBody
+        setTodos(todoListItems)
     }
 
     const cardVariants = {
@@ -168,15 +188,11 @@ export default function IndexPage() {
                             <li key={index} className="flex items-center">
                                 <input
                                     type="checkbox"
-                                    checked={todo.done}
-                                    onChange={() => {
-                                        const newTodos = [...todos]
-                                        newTodos[index].done = !newTodos[index].done
-                                        setTodos(newTodos)
-                                    }}
+                                    readOnly={true}
+                                    checked={todo.state}
                                     className="mr-2 form-checkbox h-5 w-5 text-blue-600 transition duration-150 ease-in-out"
                                 />
-                                <span className={`${todo.done ? "line-through text-gray-400" : "text-gray-800"}`}>{todo.text}</span>
+                                <span className={`${todo.state ?  "text-gray-800" : "line-through text-gray-400"}`}>{todo.title}</span>
                             </li>
                         ))}
                     </ul>

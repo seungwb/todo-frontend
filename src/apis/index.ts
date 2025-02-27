@@ -111,7 +111,6 @@ export const updateScheduleRequest = async (id: number, requestBody: UpdateSched
 const TODAY_SCHEDULE_URL = (today) =>`${API_DOMAIN}/schedule/today?today=${today}`;
 
 export const getTodayScheduleRequest = async (today:string, accessToken:string) => {
-    console.log(today);
     const result = await axios.get(TODAY_SCHEDULE_URL(today), authorization(accessToken))
         .then(response => {
             const responseBody: GetTodayScheduleIndexResponseDto = response.data;
@@ -175,7 +174,6 @@ export const getTodoRequest = async (accessToken: string) =>{
 
 const TODO_UPDATE_STATE_URL = (id) => `${API_DOMAIN}/todo/toggle/${id}`;
 export const updateStateTodoRequest = async (id: number, requestBody: UpdateStateTodoRequestDto, accessToken: string)=>{
-    console.log(requestBody);
     const result = await axios.put(TODO_UPDATE_STATE_URL(id), requestBody, authorization(accessToken))
         .then(response =>{
             const responseBody: UpdateStateTodoResponseDto = response.data;

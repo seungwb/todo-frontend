@@ -22,10 +22,11 @@ export default function Header() {
         }
     }
 
+
     const navItems = [
-        { name: "메인화면", path: MAIN_PATH },
-        { name: "일정관리", path: CALENDAR_PATH },
-        { name: "할일 목록", path: TODO_PATH },
+        { name: "메인화면", path: MAIN_PATH, requireAuth: false },
+        { name: "일정관리", path: CALENDAR_PATH, requireAuth: true },
+        { name: "할일 목록", path: TODO_PATH, requireAuth: true }
     ]
 
     return (
@@ -51,7 +52,7 @@ export default function Header() {
                         {navItems.map((item) => (
                             <Link
                                 key={item.name}
-                                to={item.path}
+                                to={item.requireAuth && !isLoggedIn ? AUTH_PATH : item.path}
                                 className="text-base font-medium text-white hover:text-gray-200 transition duration-150 ease-in-out"
                             >
                                 {item.name}
@@ -75,9 +76,8 @@ export default function Header() {
                     {navItems.map((item) => (
                         <Link
                             key={item.name}
-                            to={item.path}
+                            to={item.requireAuth && !isLoggedIn ? AUTH_PATH : item.path }
                             className="block px-3 py-2 rounded-md text-base font-medium text-white hover:text-gray-200 hover:bg-indigo-600 transition duration-150 ease-in-out"
-                            onClick={() => setIsMenuOpen(false)}
                         >
                             {item.name}
                         </Link>
