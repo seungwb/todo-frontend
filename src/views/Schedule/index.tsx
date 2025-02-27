@@ -1,77 +1,65 @@
-import React, {useEffect, useRef, useState} from 'react';
-import FullCalendar from '@fullcalendar/react';
-import dayGridPlugin from '@fullcalendar/daygrid';
-import interactionPlugin from '@fullcalendar/interaction';
-import ScheduleModal from '../../components/ScheduleModal';
-import {ScheduleListItems} from "../../types/interface";
-import {getScheduleRequest} from "../../apis";
-import {useCookies} from "react-cookie";
-import {GetScheduleResponseDto} from "../../apis/response/schedule";
-import {ResponseDto} from "../../apis/response";
-import ScheduleListItem from '../../components/ScheduleListItem'
+"use client"
 
-export default function Schedule(){
-    const [events, setEvents] = useState([]); // 일정 저장
-    const [isModalOpen, setIsModalOpen] = useState(false); // 모달 열림 여부
-    const [selectedDate, setSelectedDate] = useState(""); // 선택된 날짜
-    const [filterType, setFilterType] = useState("today"); // 🟢 현재 선택된 필터 상태
-    const [cookies, setCookie] = useCookies();
+import { useEffect, useState } from "react"
+import FullCalendar from "@fullcalendar/react"
+import dayGridPlugin from "@fullcalendar/daygrid"
+import interactionPlugin from "@fullcalendar/interaction"
+import { motion, AnimatePresence } from "framer-motion"
+import { Calendar, Filter } from "lucide-react"
+import ScheduleModal from "../../components/ScheduleModal"
+import ScheduleListItem from "../../components/ScheduleListItem"
+import type { ScheduleListItems } from "../../types/interface"
+import { getScheduleRequest } from "../../apis"
+import { useCookies } from "react-cookie"
+import type { GetScheduleResponseDto } from "../../apis/response/schedule"
+import type { ResponseDto } from "../../apis/response"
+
+export default function Schedule() {
+    const [events, setEvents] = useState([])
+    const [isModalOpen, setIsModalOpen] = useState(false)
+    const [selectedDate, setSelectedDate] = useState("")
+    const [filterType, setFilterType] = useState("today")
+    const [cookies] = useCookies()
+
     useEffect(() => {
-        fetchEvents().then();
-    }, []);
+        fetchEvents()
+    }, [])
 
-    // 날짜 클릭 시 모달 열기
     const handleDateClick = (info: any) => {
-        const clickedDateTime = new Date(info.date);
-        const now = new Date(); // 현재 시간 가져오기
-
-        // 클릭한 날짜 + 현재 시간 적용
-        clickedDateTime.setHours(now.getHours(), now.getMinutes(), 0, 0); // 🟢 현재 시간 반영
-
+        const clickedDateTime = new Date(info.date)
+        const now = new Date()
+        clickedDateTime.setHours(now.getHours(), now.getMinutes(), 0, 0)
         const localISOTime = new Date(clickedDateTime.getTime() - clickedDateTime.getTimezoneOffset() * 60000)
             .toISOString()
-            .slice(0, 16); // 🟢 24시간제 & "YYYY-MM-DDTHH:mm" 형식 적용
-        console.log('=========클릭한 시간=========');
-        console.log(localISOTime);
+            .slice(0, 16)
+        setSelectedDate(localISOTime)
+        setIsModalOpen(true)
+    }
 
-        setSelectedDate(localISOTime); // 선택한 날짜 + 시간 저장
-        setIsModalOpen(true);
-    };
-
-    const getScheduleResponse = (responseBody: GetScheduleResponseDto | ResponseDto | null)=> {
-        if(!responseBody){
-            alert('네트워크 이상입니다.');
-            return;
+    const getScheduleResponse = (responseBody: GetScheduleResponseDto | ResponseDto | null) => {
+        if (!responseBody) {
+            alert("네트워크 이상입니다.")
+            return null
         }
-        const { code } = responseBody;
-        if (code === 'DBE') alert('데이터베이스 오류입니다.');
+        const { code } = responseBody
+        if (code === "DBE") alert("데이터베이스 오류입니다.")
+        if (code === "VF" || code === "NU") alert("로그인이 필요한 기능입니다.")
+        if (code === "AF") alert("인증에 실패하였습니다")
+        if (code !== "SU") return null
+        return responseBody
+    }
 
-        if (code === 'VF' || code === 'NU')  alert('로그인이 필요한 기능입니다.');
-
-        if (code === 'AF') alert('인증에 실패하였습니다');
-        if (code!=='SU') return;
-        return responseBody;
-    };
-
-    // 새 일정 저장
     const fetchEvents = async () => {
-        const accessToken = cookies.accessToken;
-        const responseBody  = await getScheduleRequest(accessToken).then(getScheduleResponse);
-        if (!responseBody) return;
+        const accessToken = cookies.accessToken
+        const responseBody = await getScheduleRequest(accessToken).then(getScheduleResponse)
+        if (!responseBody) return
 
-        const {scheduleListItems} = responseBody as ScheduleListItems[];
+        const { scheduleListItems } = responseBody as { scheduleListItems: ScheduleListItems[] }
 
-        const scheduleList: ScheduleListItems[] = scheduleListItems.map((event: any) => ({
-            ...event,
-            startDate: new Date(event.startDate),
-            endDate: new Date(event.endDate),
-            regDate: new Date(event.regDate)
-        }));
-
-        const formattedEvents = scheduleList.map((event) => ({
+        const formattedEvents = scheduleListItems.map((event: any) => ({
             title: event.title,
-            start: event.startDate,
-            end: event.endDate,
+            start: new Date(event.startDate),
+            end: new Date(event.endDate),
             backgroundColor: "rgba(99, 102, 241, 0.5)",
             borderColor: "rgb(99, 102, 241)",
             extendedProps: {
@@ -79,93 +67,114 @@ export default function Schedule(){
                 name: event.name,
                 location: event.location,
                 content: event.content,
-                regDate: event.regDate
+                regDate: new Date(event.regDate),
             },
-        }));
+        }))
 
-        setEvents(formattedEvents); // FullCalendar에 새 일정 반영
-    };
+        setEvents(formattedEvents)
+    }
 
-
-
-
-    // 일정 필터링 함수
     const filteredEvents = events.filter((event) => {
-        const startDate = new Date(event.start);
-        startDate.setHours(0, 0, 0, 0); // 🟢 시작 날짜 00:00:00 기준으로 변경
-
-        const endDate = new Date(event.end);
-        endDate.setHours(0, 0, 0, 0); // 🟢 종료 날짜 00:00:00 기준으로 변경
-
-        const today = new Date();
-        today.setHours(0, 0, 0, 0); // 🟢 오늘 날짜 00:00:00 기준으로 변경
+        const startDate = new Date(event.start)
+        startDate.setHours(0, 0, 0, 0)
+        const endDate = new Date(event.end)
+        endDate.setHours(0, 0, 0, 0)
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
 
         if (filterType === "past") {
-            return endDate.getTime() < today.getTime(); // ✅ 종료일이 오늘보다 이전이면 과거 일정
+            return endDate.getTime() < today.getTime()
         } else if (filterType === "today") {
-            return startDate.getTime() <= today.getTime() && endDate.getTime() >= today.getTime();
-            // ✅ 시작일이 오늘이거나 오늘 이전 && 종료일이 오늘 이후
+            return startDate.getTime() <= today.getTime() && endDate.getTime() >= today.getTime()
         } else if (filterType === "future") {
-            return startDate.getTime() > today.getTime() || endDate.getTime() > today.getTime();
-            // ✅ 시작일이 오늘 이후이거나 종료일이 오늘 이후면 차후 일정에 포함
+            return startDate.getTime() > today.getTime() || endDate.getTime() > today.getTime()
         }
-        return true;
-    });
+        return true
+    })
 
-
-
-
-    return(
-        <div className="flex flex-col gap-16">
-            <div className="m-8">
+    return (
+        <div className="container mx-auto px-4 py-8">
+            <h1 className="text-3xl font-bold text-gray-800 mb-8 flex items-center">
+                <Calendar className="mr-2" /> 일정 관리
+            </h1>
+            <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
                 <FullCalendar
                     plugins={[dayGridPlugin, interactionPlugin]}
                     initialView="dayGridMonth"
-                    timeZone= 'local'
-                    events={events} // 저장된 일정 표시
-                    dateClick={handleDateClick} // 날짜 클릭 시 모달 열기
-                    className="w-full" //fullcalendar 라이브러리 사용 시 tailwindcss 사라지는 문제 해결
+                    timeZone="local"
+                    events={events}
+                    dateClick={handleDateClick}
+                    headerToolbar={{
+                        left: "prev,next today",
+                        center: "title",
+                        right: "dayGridMonth,dayGridWeek,dayGridDay",
+                    }}
+                    buttonText={{
+                        today: "오늘",
+                        month: "월",
+                        week: "주",
+                        day: "일",
+                    }}
+                    locale="ko"
+                    height="auto"
                 />
-                <ScheduleModal isOpen={isModalOpen}
-                               onClose={() => setIsModalOpen(false)}
-                               onSave = {fetchEvents}
-                               selectedDate={selectedDate}/>
             </div>
-            {/* 🟢 일정 필터 버튼 */}
-            <div className="flex flex-row justify-between p-4">
-                <button
-                    className={`px-4 py-2 rounded ${filterType === "past" ? "bg-indigo-500 text-white" : "bg-gray-200"}`}
-                    onClick={() => setFilterType("past")}
-                >
-                    이전 일정
-                </button>
-                <button
-                    className={`px-4 py-2 rounded ${filterType === "today" ? "bg-indigo-500 text-white" : "bg-gray-200"}`}
-                    onClick={() => setFilterType("today")}
-                >
-                    오늘 일정
-                </button>
-                <button
-                    className={`px-4 py-2 rounded ${filterType === "future" ? "bg-indigo-500 text-white" : "bg-gray-200"}`}
-                    onClick={() => setFilterType("future")}
-                >
-                    차후 일정
-                </button>
+            <ScheduleModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                onSave={fetchEvents}
+                selectedDate={selectedDate}
+            />
+            <div className="mb-8">
+                <h2 className="text-2xl font-semibold text-gray-800 mb-4 flex items-center">
+                    <Filter className="mr-2" /> 일정 필터
+                </h2>
+                <div className="flex  justify-between">
+                    {["past", "today", "future"].map((type) => (
+                        <button
+                            key={type}
+                            className={`px-4 py-2 rounded-full transition-colors duration-200 ${
+                                filterType === type ? "bg-indigo-500 text-white" : "bg-gray-200 text-gray-800 hover:bg-gray-300"
+                            }`}
+                            onClick={() => setFilterType(type)}
+                        >
+                            {type === "past" ? "이전 일정" : type === "today" ? "오늘 일정" : "차후 일정"}
+                        </button>
+                    ))}
+                </div>
             </div>
-
-            {/* 🟢 필터링된 일정 리스트 출력 */}
-            <div className="flex flex-col gap-4 items-center">
+            <AnimatePresence>
                 {filteredEvents.length === 0 ? (
-                    <p className="text-gray-500 text-center">일정이 없습니다.</p>
+                    <motion.p
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        className="text-gray-500 text-center text-lg"
+                    >
+                        일정이 없습니다.
+                    </motion.p>
                 ) : (
-                    filteredEvents.map((event, index) => (
-                        <ScheduleListItem key={index}
-                                          event={event}
-                                          onSave = {fetchEvents}
-                        />
-                    ))
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="grid gap-6 md:grid-cols-2 lg:grid-cols-3"
+                    >
+                        {filteredEvents.map((event, index) => (
+                            <motion.div
+                                key={event.extendedProps.id}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -20 }}
+                                transition={{ delay: index * 0.1 }}
+                            >
+                                <ScheduleListItem event={event} onSave={fetchEvents} />
+                            </motion.div>
+                        ))}
+                    </motion.div>
                 )}
-            </div>
+            </AnimatePresence>
         </div>
     )
 }
+

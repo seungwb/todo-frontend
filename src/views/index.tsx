@@ -1,171 +1,214 @@
-import React, { useState, useEffect } from "react";
-import {getTodayScheduleRequest, getWeatherRequest, getWeeklyScheduleRequest} from "../apis";
-import {ScheduleListItems} from "../types/interface";
-import {useCookies} from "react-cookie";
-import {GetTodayScheduleIndexResponseDto, ResponseDto} from "../apis/response";
+"use client"
+
+import { useState, useEffect } from "react"
+import { getTodayScheduleRequest, getWeatherRequest, getWeeklyScheduleRequest } from "../apis"
+import type { ScheduleListItems } from "../types/interface"
+import { useCookies } from "react-cookie"
+import type { GetTodayScheduleIndexResponseDto, ResponseDto } from "../apis/response"
+import { motion } from "framer-motion"
+import { Sun, Calendar, CheckSquare, AlertTriangle } from "lucide-react"
 
 export default function IndexPage() {
-    const [cookies, setCookie] = useCookies();
-    const [weather, setWeather] = useState(null);
-    const [events, setEvents] = useState([
-        { title: "팀 회의", time: "10:00 AM" },
-        { title: "운동하기", time: "2:30 PM" },
-        { title: "프로젝트 마감", time: "7:00 PM" },
-    ]);
-    const [todaySchedules, setTodaySchedules] = useState<ScheduleListItems[]>([]);
-    const [thisWeekSchedules, setThisWeekSchedules] = useState<ScheduleListItems[]>([]);
+    const [cookies] = useCookies()
+    const [weather, setWeather] = useState(null)
+    const [todaySchedules, setTodaySchedules] = useState<ScheduleListItems[]>([])
+    const [thisWeekSchedules, setThisWeekSchedules] = useState<ScheduleListItems[]>([])
     const [todos, setTodos] = useState([
         { text: "문서 작성", done: false },
         { text: "발표 준비", done: false },
         { text: "코드 리뷰", done: false },
-    ]);
-
+    ])
 
     useEffect(() => {
-        fetchWeatherEvents();
-        fetchTodayEvents();
-        fetchWeeklyEvents();
-    }, []);
+        fetchWeatherEvents()
+        fetchTodayEvents()
+        fetchWeeklyEvents()
+    }, [])
 
     const getTodayDate = (): string => {
-        const today = new Date();
-        return today.toISOString().split("T")[0]; // YYYY-MM-DD 형식으로 변환
-    };
+        const today = new Date()
+        return today.toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric" })
+    }
 
     const getThisWeekRange = (): { start: string; end: string } => {
-        const today = new Date();
-        const startOfWeek = new Date(today);
-        startOfWeek.setDate(today.getDate() - today.getDay() + 1); // 월요일
-        const endOfWeek = new Date(today);
-        endOfWeek.setDate(today.getDate() - today.getDay() + 7); // 일요일
+        const today = new Date()
+        const startOfWeek = new Date(today)
+        startOfWeek.setDate(today.getDate() - today.getDay() + 1)
+        const endOfWeek = new Date(today)
+        endOfWeek.setDate(today.getDate() - today.getDay() + 7)
 
         return {
             start: startOfWeek.toISOString().split("T")[0], // YYYY-MM-DD
             end: endOfWeek.toISOString().split("T")[0], // YYYY-MM-DD
-        };
-    };
-
-    const fetchWeatherEvents = async ()=>{
-
-        //                 fetch : 날씨 정보          //
-        const responseBody = await getWeatherRequest(); // API 호출
-        setWeather(responseBody);
-    }
-    const getTodayScheduleResponse = (responseBody: GetTodayScheduleIndexResponseDto | ResponseDto | null)=> {
-        if(!responseBody){
-            alert('네트워크 이상입니다.');
-            return;
         }
-        const { code } = responseBody;
-        if (code === 'DBE') alert('데이터베이스 오류입니다.');
-
-        if (code === 'VF' || code === 'NU')  alert('로그인이 필요한 기능입니다.');
-
-        if (code === 'AF') alert('인증에 실패하였습니다');
-        if (code!=='SU') return;
-        return responseBody;
-    };
-    const fetchTodayEvents = async () =>{
-        const accessToken = cookies.accessToken;
-        if(!accessToken) return;
-        //                 fetch: 오늘 일정          //
-        const today = getTodayDate();
-        const responseBody = await getTodayScheduleRequest(today, accessToken).then(getTodayScheduleResponse);
-        const {todayScheduleListItems} = responseBody as ScheduleListItems[];
-
-        const scheduleList: ScheduleListItems[] = todayScheduleListItems.map((e: any) => ({
-            ...e,
-            startDate: new Date(e.startDate).toISOString().split("T")[0], // 'YYYY-MM-DD' 변환
-            endDate: new Date(e.endDate).toISOString().split("T")[0],
-            regDate: new Date(e.regDate).toISOString().split("T")[0]
-        }));
-        setTodaySchedules(scheduleList);
-
     }
 
-    const fetchWeeklyEvents = async () =>{
-        const accessToken = cookies.accessToken;
-        if(!accessToken) return;
-        //                 fetch: 오늘 일정          //
-        const {start} = getThisWeekRange()
-        const {end} = getThisWeekRange()
+    const fetchWeatherEvents = async () => {
+        const responseBody = await getWeatherRequest()
+        setWeather(responseBody)
+    }
+
+    const getTodayScheduleResponse = (responseBody: GetTodayScheduleIndexResponseDto | ResponseDto | null) => {
+        if (!responseBody) {
+            alert("네트워크 이상입니다.")
+            return
+        }
+        const { code } = responseBody
+        if (code === "DBE") alert("데이터베이스 오류입니다.")
+        if (code === "VF" || code === "NU") alert("로그인이 필요한 기능입니다.")
+        if (code === "AF") alert("인증에 실패하였습니다")
+        if (code !== "SU") return
+        return responseBody
+    }
+
+    const fetchTodayEvents = async () => {
+        const accessToken = cookies.accessToken
+        if (!accessToken) return
+        const today = new Date().toISOString().split("T")[0]
+        console.log(today);
+        const responseBody = await getTodayScheduleRequest(today, accessToken).then(getTodayScheduleResponse)
+        if (responseBody && "todayScheduleListItems" in responseBody) {
+            const scheduleList: ScheduleListItems[] = responseBody.todayScheduleListItems.map((e: any) => ({
+                ...e,
+                startDate: new Date(e.startDate).toLocaleDateString("ko-KR"),
+                endDate: new Date(e.endDate).toLocaleDateString("ko-KR"),
+                regDate: new Date(e.regDate).toLocaleDateString("ko-KR"),
+            }))
+            setTodaySchedules(scheduleList)
+        }
+    }
+
+    const fetchWeeklyEvents = async () => {
+        const accessToken = cookies.accessToken
+        if (!accessToken) return
+        const { start, end } = getThisWeekRange()
+        console.log('start'+start)
+        console.log('end'+end)
         const responseBody = await getWeeklyScheduleRequest(start, end, accessToken)
-            .then();
-        const {weeklyScheduleListItems} = responseBody as ScheduleListItems[];
-
-        const scheduleList: ScheduleListItems[] = weeklyScheduleListItems.map((e: any) => ({
-            ...e,
-            startDate: new Date(e.startDate).toISOString().split("T")[0], // 'YYYY-MM-DD' 변환
-            endDate: new Date(e.endDate).toISOString().split("T")[0],
-            regDate: new Date(e.regDate).toISOString().split("T")[0]
-        }));
-        setThisWeekSchedules(scheduleList);
+        if (responseBody && "weeklyScheduleListItems" in responseBody) {
+            const scheduleList: ScheduleListItems[] = responseBody.weeklyScheduleListItems.map((e: any) => ({
+                ...e,
+                startDate: new Date(e.startDate).toLocaleDateString("ko-KR"),
+                endDate: new Date(e.endDate).toLocaleDateString("ko-KR"),
+                regDate: new Date(e.regDate).toLocaleDateString("ko-KR"),
+            }))
+            setThisWeekSchedules(scheduleList)
+        }
     }
+
+    const cardVariants = {
+        hidden: { opacity: 0, y: 20 },
+        visible: { opacity: 1, y: 0 },
+    }
+
 
     return (
-        <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* ☀️ 날씨 정보 */}
-            <section className="bg-blue-100 p-4 rounded-2xl shadow-md">
-                <h2 className="text-lg font-semibold">☀️ 오늘의 날씨</h2>
-                {weather ? (
-                    <p className="text-gray-700 mt-2">
-                        {weather.name}: {weather.main.temp}°C, {weather.weather[0].description}
-                    </p>
-                ) : (
-                    <p className="text-gray-500 mt-2">날씨 정보를 불러오는 중...</p>
-                )}
-            </section>
+        <div className="p-6 bg-gray-100 min-h-screen">
+            <h1 className="text-3xl font-bold text-gray-800 mb-6">대시보드</h1>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <motion.section
+                    className="bg-gradient-to-br from-blue-400 to-blue-600 p-6 rounded-2xl shadow-lg text-white"
+                    variants={cardVariants}
+                    initial="hidden"
+                    animate="visible"
+                    transition={{ delay: 0.1 }}
+                >
+                    <h2 className="text-xl font-semibold flex items-center mb-4">
+                        <Sun className="mr-2" /> 오늘의 날씨
+                    </h2>
+                    {weather ? (
+                        <div>
+                            <p className="text-2xl font-bold">{weather.main.temp}°C</p>
+                            <p className="text-lg">{weather.weather[0].description}</p>
+                            <p className="text-sm mt-2">{weather.name}</p>
+                        </div>
+                    ) : (
+                        <p className="text-lg">날씨 정보를 불러오는 중...</p>
+                    )}
+                </motion.section>
 
-            {/* 📝 오늘의 일정 */}
-            <section className="bg-white p-4 rounded-2xl shadow-md">
-                <h2 className="text-lg font-semibold">📝 오늘의 일정 ({getTodayDate()})</h2>
-                <ul className="mt-2 space-y-3">
-                    {todaySchedules.map((schedule, index) => (
-                        <li key={index} className="text-gray-800">
-                            📌 <span className="font-medium">{schedule.startDate} - {schedule.endDate}</span>
-                            <div className="ml-6 text-gray-600">{schedule.title}</div>
-                        </li>
-                    ))}
-                </ul>
-            </section>
+                <motion.section
+                    className="bg-white p-6 rounded-2xl shadow-lg"
+                    variants={cardVariants}
+                    initial="hidden"
+                    animate="visible"
+                    transition={{ delay: 0.2 }}
+                >
+                    <h2 className="text-xl font-semibold flex items-center mb-4">
+                        <Calendar className="mr-2" /> 오늘의 일정 ({getTodayDate()})
+                    </h2>
+                    {todaySchedules.length > 0 ? (
+                        <ul className="space-y-3">
+                            {todaySchedules.map((schedule, index) => (
+                                <li key={index} className="bg-gray-50 p-3 rounded-lg">
+                                    <p className="font-medium text-gray-800">{schedule.title}</p>
+                                    <p className="text-sm text-gray-600">
+                                        {schedule.startDate} - {schedule.endDate}
+                                    </p>
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <p className="text-gray-500">오늘 예정된 일정이 없습니다.</p>
+                    )}
+                </motion.section>
 
-            {/* ✅ 할 일 목록 (To-Do List) */}
-            <section className="bg-gray-100 p-4 rounded-2xl shadow-md">
-                <h2 className="text-lg font-semibold">✅ 할 일 목록</h2>
-                <ul className="mt-2 space-y-2">
-                    {todos.map((todo, index) => (
-                        <li key={index} className="flex items-center">
-                            <input
-                                type="checkbox"
-                                checked={todo.done}
-                                onChange={() => {
-                                    const newTodos = [...todos];
-                                    newTodos[index].done = !newTodos[index].done;
-                                    setTodos(newTodos);
-                                }}
-                                className="mr-2"
-                            />
-                            <span className={`${todo.done ? "line-through text-gray-500" : "text-gray-800"}`}>
-                {todo.text}
-              </span>
-                        </li>
-                    ))}
-                </ul>
-            </section>
+                <motion.section
+                    className="bg-white p-6 rounded-2xl shadow-lg"
+                    variants={cardVariants}
+                    initial="hidden"
+                    animate="visible"
+                    transition={{ delay: 0.3 }}
+                >
+                    <h2 className="text-xl font-semibold flex items-center mb-4">
+                        <CheckSquare className="mr-2" /> 할 일 목록
+                    </h2>
+                    <ul className="space-y-2">
+                        {todos.map((todo, index) => (
+                            <li key={index} className="flex items-center">
+                                <input
+                                    type="checkbox"
+                                    checked={todo.done}
+                                    onChange={() => {
+                                        const newTodos = [...todos]
+                                        newTodos[index].done = !newTodos[index].done
+                                        setTodos(newTodos)
+                                    }}
+                                    className="mr-2 form-checkbox h-5 w-5 text-blue-600 transition duration-150 ease-in-out"
+                                />
+                                <span className={`${todo.done ? "line-through text-gray-400" : "text-gray-800"}`}>{todo.text}</span>
+                            </li>
+                        ))}
+                    </ul>
+                </motion.section>
 
-            {/* 🔥 주간 일정 요약 */}
-            <section className="bg-yellow-100 p-4 rounded-2xl shadow-md col-span-1 md:col-span-2">
-                <h2 className="text-lg font-semibold">🔥 이번 주 일정 ({getThisWeekRange().start} - {getThisWeekRange().end})</h2>
-                <p className="text-gray-800 mt-2">📅 이번 주 총 {thisWeekSchedules.length}개의 일정 있음</p>
-                <ul className="mt-3 space-y-3">
-                    {thisWeekSchedules.map((schedule, index) => (
-                        <li key={index} className="text-gray-800">
-                            📅 <span className="font-medium">{schedule.startDate} - {schedule.endDate}</span>
-                            <div className="ml-6 text-gray-600">{schedule.title}</div>
-                        </li>
-                    ))}
-                </ul>
-            </section>
+                <motion.section
+                    className="bg-gradient-to-br from-indigo-600 to-purple-700 p-6 rounded-2xl shadow-lg text-white md:col-span-2 lg:col-span-3"
+                    variants={cardVariants}
+                    initial="hidden"
+                    animate="visible"
+                    transition={{ delay: 0.4 }}
+                >
+                    <h2 className="text-xl font-semibold flex items-center mb-4 text-shadow">
+                        <AlertTriangle className="mr-2" /> 이번 주 일정 ({getThisWeekRange().start} - {getThisWeekRange().end})
+                    </h2>
+                    <p className="text-lg mb-4 text-shadow">📅 이번 주 총 {thisWeekSchedules.length}개의 일정이 있습니다.</p>
+                    {thisWeekSchedules.length > 0 ? (
+                        <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {thisWeekSchedules.map((schedule, index) => (
+                                <li key={index} className="bg-indigo-100 bg-opacity-20 p-3 rounded-lg text-shadow">
+                                    <p className="font-medium text-indigo-700">{schedule.title}</p>
+                                    <p className="text-sm text-indigo-500">
+                                        {schedule.startDate} - {schedule.endDate}
+                                    </p>
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <p className="text-shadow">이번 주 예정된 일정이 없습니다.</p>
+                    )}
+                </motion.section>
+            </div>
         </div>
-    );
+    )
 }
