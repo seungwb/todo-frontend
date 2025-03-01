@@ -1,4 +1,4 @@
 
 export default interface UpdateStateTodoRequestDto{
-    state: boolean;
+    state: boolean
 }

@@ -67,7 +67,7 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({ isOpen, onClose, onSave, 
         const { code } = responseBody
         if (code === "DBE") alert("데이터베이스 오류입니다.")
         if (code === "VF" || code === "NU") alert("로그인이 필요한 기능입니다.")
-        if (code === "AF") alert("인증에 실패하였습니다")
+        if (code === "NS") alert("존재하지 않는 게시물 입니다.")
         if (code !== "SU") return
 
         alert(initialData ? "일정이 수정되었습니다!" : "일정이 추가되었습니다!")

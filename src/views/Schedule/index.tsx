@@ -22,7 +22,7 @@ export default function Schedule() {
     const [cookies] = useCookies()
 
     useEffect(() => {
-        fetchEvents()
+        fetchEvents().then()
     }, [])
 
     const handleDateClick = (info: any) => {
@@ -43,8 +43,7 @@ export default function Schedule() {
         }
         const { code } = responseBody
         if (code === "DBE") alert("데이터베이스 오류입니다.")
-        if (code === "VF" || code === "NU") alert("로그인이 필요한 기능입니다.")
-        if (code === "AF") alert("인증에 실패하였습니다")
+        if (code === "VF") alert("로그인이 필요한 기능입니다.")
         if (code !== "SU") return null
         return responseBody
     }

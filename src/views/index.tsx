@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import {getTodayScheduleRequest, getTodoRequest, getWeatherRequest, getWeeklyScheduleRequest} from "../apis"
 import type { ScheduleListItems } from "../types/interface"
 import { useCookies } from "react-cookie"
-import type { GetTodayScheduleIndexResponseDto, ResponseDto } from "../apis/response"
+import type {GetTodayScheduleIndexResponseDto, GetWeeklyScheduleIndexResponseDto, ResponseDto} from "../apis/response"
 import { motion } from "framer-motion"
 import { Sun, Calendar, CheckSquare, AlertTriangle } from "lucide-react"
 import type {GetTodoResponseDto} from "../apis/response/todo";
@@ -17,10 +17,10 @@ export default function IndexPage() {
     const [todos, setTodos] = useState([])
 
     useEffect(() => {
-        fetchWeatherEvents()
-        fetchTodayEvents()
-        fetchWeeklyEvents()
-        fetchTodoEvents()
+        fetchWeatherEvents().then()
+        fetchTodayEvents().then()
+        fetchWeeklyEvents().then()
+        fetchTodoEvents().then()
     }, [])
 
     const getTodayDate = (): string => {
@@ -52,9 +52,6 @@ export default function IndexPage() {
             return
         }
         const { code } = responseBody
-        if (code === "DBE") alert("데이터베이스 오류입니다.")
-        if (code === "VF" || code === "NU") alert("로그인이 필요한 기능입니다.")
-        if (code === "AF") alert("인증에 실패하였습니다")
         if (code !== "SU") return
         return responseBody
     }
@@ -75,11 +72,21 @@ export default function IndexPage() {
         }
     }
 
+    const getWeeklyScheduleResponse = (responseBody: GetWeeklyScheduleIndexResponseDto | ResponseDto | null) => {
+        if (!responseBody) {
+            alert("네트워크 이상입니다.")
+            return
+        }
+        const { code } = responseBody
+        if (code !== "SU") return
+        return responseBody
+    }
+
     const fetchWeeklyEvents = async () => {
         const accessToken = cookies.accessToken
         if (!accessToken) return
         const { start, end } = getThisWeekRange()
-        const responseBody = await getWeeklyScheduleRequest(start, end, accessToken)
+        const responseBody = await getWeeklyScheduleRequest(start, end, accessToken).then(getWeeklyScheduleResponse)
         if (responseBody && "weeklyScheduleListItems" in responseBody) {
             const scheduleList: ScheduleListItems[] = responseBody.weeklyScheduleListItems.map((e: any) => ({
                 ...e,
@@ -97,9 +104,6 @@ export default function IndexPage() {
             return
         }
         const { code } = responseBody
-        if (code === "DBE") alert("데이터베이스 오류입니다.")
-        if (code === "VF" || code === "NU") alert("로그인이 필요한 기능입니다.")
-        if (code === "AF") alert("인증에 실패하였습니다")
         if (code !== "SU") return
         return responseBody
     }
@@ -183,6 +187,7 @@ export default function IndexPage() {
                     <h2 className="text-xl font-semibold flex items-center mb-4">
                         <CheckSquare className="mr-2" /> 할 일 목록
                     </h2>
+                    {todos.length > 0 ? (
                     <ul className="space-y-2">
                         {todos.map((todo, index) => (
                             <li key={index} className="flex items-center">
@@ -196,6 +201,9 @@ export default function IndexPage() {
                             </li>
                         ))}
                     </ul>
+                        ): (
+                        <p className="text-gray-500">오늘 예정된 할일이 없습니다.</p>
+                    )}
                 </motion.section>
 
                 <motion.section

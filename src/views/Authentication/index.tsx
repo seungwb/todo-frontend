@@ -142,7 +142,7 @@ export default function Authentication() {
             }
             const { code } = responseBody
             if (code === "DBE") alert("데이터베이스 오류입니다.")
-            if (code === "SF" || code === "VF") alert("회원가입 정보를 확인해주세요.")
+            if (code === "DP") alert("동일한 휴대전화로 회원가입되어 있습니다.")
             if (code === "DE") alert("동일한 이메일이 회원가입되어 있습니다.")
             if (code !== "SU") return
 
@@ -238,7 +238,7 @@ export default function Authentication() {
         <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-blue-100 to-purple-100 p-4">
             <div className="w-full max-w-md bg-white rounded-xl shadow-2xl p-8 transition-all duration-300 ease-in-out transform hover:scale-105">
                 <AnimatePresence mode="wait">
-                    {view === "sign-in" ? <SignInCard key="sign-in" /> : <SignUpCard key="sign-up" />}
+                    {view === "sign-in" ? <SignInCard key="sign-in" /> : <SignUpCard key="sign-up" />}as
                 </AnimatePresence>
             </div>
         </div>
