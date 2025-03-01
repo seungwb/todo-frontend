@@ -1,47 +1,63 @@
-# Getting Started with Create React App
+## 프로젝트 개요
+- 프로젝트 명: 투두등장 (Frontend)
+- 설명: 일정 및 할 일 관리를 지원하는 웹 애플리케이션
+- 주요기능:
+  - 날씨 정보 제공 (OpenWeatherMap API 연동)
+  - 일정 관리 (Fullcalendar 기반 일정 추가, 수정, 삭제)
+  - 할 일 관리 (To-Do 리스트 추가, 수정, 삭제, 완료 체크로 할일 완료 여부 관리)
+  - 반응형 UI 지원
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## 기술 스택
 
-## Available Scripts
+- 개발 환경
 
-In the project directory, you can run:
+  ![IntelliJ IDEA](https://img.shields.io/badge/IntelliJ_IDEA-000000?style=for-the-badge&logo=intellijidea&logoColor=white)
+  ![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)
+- 설정 및 패키지 관리
 
-### `npm start`
+  ![NPM](https://img.shields.io/badge/NPM-CB3837?style=for-the-badge&logo=npm&logoColor=white)
+- 사용 기술
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![React](https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black)
+![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
+![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwindcss&logoColor=white)
+![React Router](https://img.shields.io/badge/React_Router-CA4245?style=for-the-badge&logo=react-router&logoColor=white)
+![Axios](https://img.shields.io/badge/Axios-5A29E4?style=for-the-badge&logo=axios&logoColor=white)
+![Framer Motion](https://img.shields.io/badge/Framer_Motion-0055FF?style=for-the-badge&logo=framer&logoColor=white)
+![FullCalendar](https://img.shields.io/badge/FullCalendar-FF4F00?style=for-the-badge&logo=fullcalendar&logoColor=white)
+![React Modal](https://img.shields.io/badge/React_Modal-61DAFB?style=for-the-badge&logo=react&logoColor=black)
+![Lucide React](https://img.shields.io/badge/Lucide_React-000000?style=for-the-badge&logo=lucide&logoColor=white)
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
 
-### `npm test`
+## 프로젝트 구조
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```angular2html
+frontend/
+│── src/
+│   ├── apis/           # API 호출 관련 코드
+│   ├── assets/         # 정적 파일 (이미지, 아이콘 등)
+│   ├── components/     # 재사용 가능한 UI 컴포넌트
+│   ├── constants/      # 상수값 정의
+│   ├── layouts/        # 페이지 공통 레이아웃
+│   ├── types/          # TypeScript 인터페이스 및 타입
+│   ├── utils/          # 유틸리티 함수
+│   ├── views/          # 페이지 단위 컴포넌트
+│── public/             # 정적 파일 (favicon 등)
+│── index.html          # 기본 HTML 파일
+│── package.json        # 프로젝트 설정 및 의존성
+│── vite.config.ts      # Vite 설정 파일
+│── tailwind.config.js  # Tailwind 설정 파일
+```
 
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
+## 주요 기능 설명
+- 인덱스 페이지
+  - 현재 날씨 정보 제공 (OpenWeatherMap API 활용)
+  - 오늘의 일정 및 할 일 리스트 표시
+  - 이번 주 일정 한눈에 확인 가능
+- 일정 관리
+  - FullCalendar 를 사용하여 캘린더 기반 일정 관리
+  - 일정 추가, 수정, 삭제 가능
+- 할 일 관리
+  - 새로운 할 일 추가, 수정 삭제 가능
+  - 체크박스를 이용한 완료 처리 가능
