@@ -57,63 +57,64 @@ export default function ScheduleListItem({ event, onSave }) {
     }
 
     return (
-        <motion.div
-            className="bg-white rounded-lg shadow-md overflow-hidden"
-            whileHover={{ scale: 1.03 }}
-            transition={{ duration: 0.2 }}
-        >
-            <div className="p-6">
-                <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-xl font-semibold text-gray-800">{event.title}</h3>
-                    <div className="flex space-x-2">
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation()
-                                onUpdateButtonHandler(event)}
-                            }
-                            className="text-blue-500 hover:text-blue-700 transition-colors duration-200"
-                            aria-label="일정 수정"
-                        >
-                            <Edit2 size={18} />
-                        </button>
-                        <button
-                            onClick={onDeleteButtonHandler}
-                            className="text-red-500 hover:text-red-700 transition-colors duration-200"
-                            aria-label="일정 삭제"
-                        >
-                            <Trash2 size={18} />
-                        </button>
+        <>
+            <motion.div
+                className="bg-white rounded-lg shadow-md overflow-hidden"
+                whileHover={{ scale: 1.03 }}
+                transition={{ duration: 0.2 }}
+            >
+                <div className="p-6">
+                    <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-xl font-semibold text-gray-800">{event.title}</h3>
+                        <div className="flex space-x-2">
+                            <button
+                                onClick={() => onUpdateButtonHandler(event)}
+                                className="text-blue-500 hover:text-blue-700 transition-colors duration-200"
+                                aria-label="일정 수정"
+                            >
+                                <Edit2 size={18} />
+                            </button>
+                            <button
+                                onClick={onDeleteButtonHandler}
+                                className="text-red-500 hover:text-red-700 transition-colors duration-200"
+                                aria-label="일정 삭제"
+                            >
+                                <Trash2 size={18} />
+                            </button>
+                        </div>
+                    </div>
+                    <div className="text-sm text-gray-600 mb-4">
+                        <p className="flex items-center mb-1">
+                            <Calendar className="mr-2" size={16} />
+                            {new Date(event.start).toLocaleDateString()} - {new Date(event.end).toLocaleDateString()}
+                        </p>
+                        <p className="flex items-center">
+                            <Clock className="mr-2" size={16} />
+                            {new Date(event.start).toLocaleTimeString()} - {new Date(event.end).toLocaleTimeString()}
+                        </p>
+                    </div>
+                    {event.extendedProps?.location && (
+                        <p className="text-sm text-gray-600 mb-4 flex items-center">
+                            <MapPin className="mr-2" size={16} />
+                            {event.extendedProps.location}
+                        </p>
+                    )}
+                    {event.extendedProps?.content && <p className="text-sm text-gray-700 mb-4">{event.extendedProps.content}</p>}
+                    <div className="text-xs text-gray-500 mt-4">
+                        <p>작성자: {event.extendedProps.name}</p>
+                        <p>작성일: {new Date(event.extendedProps.regDate).toLocaleString()}</p>
                     </div>
                 </div>
-                <div className="text-sm text-gray-600 mb-4">
-                    <p className="flex items-center mb-1">
-                        <Calendar className="mr-2" size={16} />
-                        {new Date(event.start).toLocaleDateString()} - {new Date(event.end).toLocaleDateString()}
-                    </p>
-                    <p className="flex items-center">
-                        <Clock className="mr-2" size={16} />
-                        {new Date(event.start).toLocaleTimeString()} - {new Date(event.end).toLocaleTimeString()}
-                    </p>
-                </div>
-                {event.extendedProps?.location && (
-                    <p className="text-sm text-gray-600 mb-4 flex items-center">
-                        <MapPin className="mr-2" size={16} />
-                        {event.extendedProps.location}
-                    </p>
-                )}
-                {event.extendedProps?.content && <p className="text-sm text-gray-700 mb-4">{event.extendedProps.content}</p>}
-                <div className="text-xs text-gray-500 mt-4">
-                    <p>작성자: {event.extendedProps.name}</p>
-                    <p>작성일: {new Date(event.extendedProps.regDate).toLocaleString()}</p>
-                </div>
-            </div>
+
+
+            </motion.div>
             <ScheduleModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 initialData={updateData}
                 onSave={onSave}
             />
-        </motion.div>
+        </>
     )
 }
 
