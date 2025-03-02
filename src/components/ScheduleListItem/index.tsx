@@ -67,7 +67,10 @@ export default function ScheduleListItem({ event, onSave }) {
                     <h3 className="text-xl font-semibold text-gray-800">{event.title}</h3>
                     <div className="flex space-x-2">
                         <button
-                            onClick={() => onUpdateButtonHandler(event)}
+                            onClick={(e) => {
+                                e.stopPropagation()
+                                onUpdateButtonHandler(event)}
+                            }
                             className="text-blue-500 hover:text-blue-700 transition-colors duration-200"
                             aria-label="일정 수정"
                         >
