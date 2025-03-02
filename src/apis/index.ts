@@ -18,7 +18,7 @@ import {
     UpdateTodoResponseDto
 } from "./response/todo";
 
-const DOMAIN = 'http://localhost:4000';
+const DOMAIN = import.meta.env.VITE_API_URL;
 
 const API_DOMAIN = `${DOMAIN}/api`;
 
