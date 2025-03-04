@@ -43,7 +43,7 @@ const TodoModal: React.FC<TodoModalProps> = ({ isOpen, onSave, onClose, initialD
             })
         }
         setError("")
-    }, [initialData])
+    }, [initialData, onClose])
 
     const onChangeHandler = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target

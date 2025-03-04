@@ -46,8 +46,10 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({ isOpen, onClose, onSave, 
                 endDate: initialData.endDate,
             })
         } else if (selectedDate) {
-            setFormData((prevFormData) => ({
-                ...prevFormData,
+            setFormData(() => ({
+                title: "",
+                content: "",
+                location: "",
                 startDate: selectedDate,
                 endDate: selectedDate,
             }))
