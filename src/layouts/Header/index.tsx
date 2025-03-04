@@ -16,6 +16,7 @@ export default function Header() {
     const handleAuthClick = () => {
         if (isLoggedIn) {
             deleteCookie("accessToken")
+            navigate(MAIN_PATH)
             window.location.reload()
         } else {
             navigate(AUTH_PATH)
