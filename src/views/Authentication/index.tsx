@@ -4,15 +4,15 @@ import { type ChangeEvent, type KeyboardEvent, useRef, useState } from "react"
 import { useCookies } from "react-cookie"
 import { useNavigate } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
-import { signInRequest, signUpRequest } from "../../apis"
-import type { SignInRequestDto, SignUpRequestDto } from "../../apis/request/auth"
-import type { SignInResponseDto, SignUpResponseDto } from "../../apis/response/auth"
+import {findIdRequest, signInRequest, signUpRequest} from "../../apis"
+import type {FindIdRequestDto, SignInRequestDto, SignUpRequestDto} from "../../apis/request/auth"
+import type {FindIdResponseDto, SignInResponseDto, SignUpResponseDto} from "../../apis/response/auth"
 import type { ResponseDto } from "../../apis/response"
 import { CALENDAR_PATH, MAIN_PATH } from "../../constants"
 import InputBox from "../../components/InputBox"
 
 export default function Authentication() {
-    const [view, setView] = useState<"sign-in" | "sign-up">("sign-in")
+    const [view, setView] = useState<"sign-in" | "sign-up" | "find-id" | "find-password">("sign-in")
     const [cookies, setCookie] = useCookies()
     const navigate = useNavigate()
 
@@ -56,9 +56,9 @@ export default function Authentication() {
 
         return (
             <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
+                initial={{opacity: 0, y: 20}}
+                animate={{opacity: 1, y: 0}}
+                exit={{opacity: 0, y: -20}}
                 className="w-full max-w-md"
             >
                 <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">로그인</h2>
@@ -90,6 +90,18 @@ export default function Authentication() {
                 >
                     로그인
                 </button>
+                <div className="flex justify-center text-gray-600 mt-4">
+                    <span className="text-blue-600 cursor-pointer hover:underline"
+                          onClick={() => setView("find-id")}
+                    >
+                    아이디 찾기
+                    </span>
+                    <span className="text-gray-400 mx-2">ㅣ</span>
+                    <span className="text-blue-600 cursor-pointer hover:underline"
+                          onClick={() => setView("find-password")}>
+                    비밀번호 찾기
+                    </span>
+                </div>
                 <p className="text-center text-gray-600 mt-4">
                     아이디가 없다면?{" "}
                     <span className="text-blue-600 cursor-pointer hover:underline" onClick={() => setView("sign-up")}>
@@ -234,11 +246,171 @@ export default function Authentication() {
         )
     }
 
+    const FindIdCard = () => {
+        const [name, setName] = useState<string>("")
+        const [phone, setPhone] = useState<string>("")
+        const nameRef = useRef<HTMLInputElement | null>(null)
+        const phoneRef = useRef<HTMLInputElement | null>(null)
+
+        const onNameChangeHandler = (e: ChangeEvent<HTMLInputElement>) => setName(e.target.value)
+        const onPhoneChangeHandler = (e: ChangeEvent<HTMLInputElement>) => setPhone(e.target.value)
+
+        const onNameKeyDownHandler = (e: KeyboardEvent<HTMLInputElement>) => {
+            if (e.key === "Enter") phoneRef.current?.focus()
+        }
+
+        const onPhoneKeyDownHandler = (e: KeyboardEvent<HTMLInputElement>) => {
+            if (e.key === "Enter") onFindIdButtonClickHandler()
+        }
+
+        const findIdResponse = (responseBody: FindIdResponseDto | ResponseDto | null) => {
+            if (!responseBody) {
+                alert("네트워크 이상입니다.")
+                return
+            }
+            const { code } = responseBody
+            if (code === "DBE") alert("데이터베이스 오류입니다.")
+            if (code === "FF") alert("일치하는 회원정보가 없습니다.")
+            if (code !== "SU") return
+
+            const { email } = responseBody
+            alert(email);
+            setView("sign-in")
+        }
+
+        const onFindIdButtonClickHandler = () => {
+            const requestBody: FindIdRequestDto = { name, phone }
+            findIdRequest(requestBody).then(findIdResponse)
+        }
+
+        return (
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="w-full max-w-md"
+            >
+                <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">아이디 찾기</h2>
+                <InputBox
+                    ref={nameRef}
+                    label="이름"
+                    type="text"
+                    placeholder="이름을 입력해주세요."
+                    value={name}
+                    onChange={onNameChangeHandler}
+                    onKeyDown={onNameKeyDownHandler}
+                    errorMessage="이름은 2자 이상이어야 합니다."
+                    onValidate={(value) => value.length >= 2}
+                />
+                <InputBox
+                    ref={phoneRef}
+                    label="휴대전화번호"
+                    type="text"
+                    placeholder="전화번호를 입력해주세요. ex)01012345678"
+                    value={phone}
+                    onChange={onPhoneChangeHandler}
+                    onKeyDown={onPhoneKeyDownHandler}
+                    errorMessage="올바른 전화번호 형식이 아닙니다."
+                    onValidate={(value) => /^[0-9]{11,13}$/.test(value)}
+                />
+                <button
+                    onClick={onFindIdButtonClickHandler}
+                    className="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg mt-6 hover:bg-blue-700 transition duration-300 ease-in-out transform hover:-translate-y-1"
+                >
+                    아이디 찾기
+                </button>
+                <div className="flex justify-center text-gray-600 mt-4">
+          <span className="text-blue-600 cursor-pointer hover:underline" onClick={() => setView("sign-in")}>
+            로그인으로 돌아가기
+          </span>
+                    <span className="text-gray-400 mx-2">ㅣ</span>
+                    <span className="text-blue-600 cursor-pointer hover:underline" onClick={() => setView("find-password")}>
+            비밀번호 찾기
+          </span>
+                </div>
+            </motion.div>
+        )
+    }
+
+    const FindPasswordCard = () => {
+        const [email, setEmail] = useState<string>("")
+        const [phone, setPhone] = useState<string>("")
+        const emailRef = useRef<HTMLInputElement | null>(null)
+        const phoneRef = useRef<HTMLInputElement | null>(null)
+
+        const onEmailChangeHandler = (e: ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)
+        const onPhoneChangeHandler = (e: ChangeEvent<HTMLInputElement>) => setPhone(e.target.value)
+
+        const onEmailKeyDownHandler = (e: KeyboardEvent<HTMLInputElement>) => {
+            if (e.key === "Enter") phoneRef.current?.focus()
+        }
+
+        const onPhoneKeyDownHandler = (e: KeyboardEvent<HTMLInputElement>) => {
+            if (e.key === "Enter") onFindPasswordButtonClickHandler()
+        }
+
+        const onFindPasswordButtonClickHandler = () => {
+            // Implement find password logic here
+            console.log("Finding password for:", email, phone)
+        }
+
+        return (
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="w-full max-w-md"
+            >
+                <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">비밀번호 찾기</h2>
+                <InputBox
+                    ref={emailRef}
+                    label="이메일 주소"
+                    type="text"
+                    placeholder="이메일을 입력해주세요."
+                    value={email}
+                    onChange={onEmailChangeHandler}
+                    onKeyDown={onEmailKeyDownHandler}
+                    errorMessage="올바른 이메일 형식이 아닙니다."
+                    onValidate={(value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)}
+                />
+                <InputBox
+                    ref={phoneRef}
+                    label="휴대전화번호"
+                    type="text"
+                    placeholder="전화번호를 입력해주세요. ex)01012345678"
+                    value={phone}
+                    onChange={onPhoneChangeHandler}
+                    onKeyDown={onPhoneKeyDownHandler}
+                    errorMessage="올바른 전화번호 형식이 아닙니다."
+                    onValidate={(value) => /^[0-9]{11,13}$/.test(value)}
+                />
+                <button
+                    onClick={onFindPasswordButtonClickHandler}
+                    className="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg mt-6 hover:bg-blue-700 transition duration-300 ease-in-out transform hover:-translate-y-1"
+                >
+                    비밀번호 찾기
+                </button>
+                <div className="flex justify-center text-gray-600 mt-4">
+          <span className="text-blue-600 cursor-pointer hover:underline" onClick={() => setView("sign-in")}>
+            로그인으로 돌아가기
+          </span>
+                    <span className="text-gray-400 mx-2">ㅣ</span>
+                    <span className="text-blue-600 cursor-pointer hover:underline" onClick={() => setView("find-id")}>
+            아이디 찾기
+          </span>
+                </div>
+            </motion.div>
+        )
+    }
+
     return (
         <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-blue-100 to-purple-100 p-4">
             <div className="w-full max-w-md bg-white rounded-xl shadow-2xl p-8 transition-all duration-300 ease-in-out transform hover:scale-105">
                 <AnimatePresence mode="wait">
-                    {view === "sign-in" ? <SignInCard key="sign-in" /> : <SignUpCard key="sign-up" />}as
+                    {view === "sign-in" && <SignInCard key="sign-in" />}
+                    {view === "sign-up" && <SignUpCard key="sign-up" />}
+                    {view === "find-id" && <FindIdCard key="find-id" />}
+                    {view === "find-password" && <FindPasswordCard key="find-password" />}
                 </AnimatePresence>
             </div>
         </div>

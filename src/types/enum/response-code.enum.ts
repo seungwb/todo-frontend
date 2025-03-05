@@ -13,6 +13,9 @@ enum ResponseCode{
     //HTTP Status 401
     SIGN_IN_FAIL = "SF",
 
+    //HTTP Status 404
+    FIND_ID_FAIL = "FF",
+
     //HTTP Status 500
     DATABASE_ERROR = "DBE"
 }

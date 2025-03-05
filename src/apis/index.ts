@@ -1,6 +1,6 @@
-import {SignInRequestDto} from './request/auth';
+import {FindIdRequestDto, SignInRequestDto} from './request/auth';
 import axios from 'axios';
-import {SignInResponseDto, SignUpResponseDto} from './response/auth';
+import {FindIdResponseDto, SignInResponseDto, SignUpResponseDto} from './response/auth';
 import {GetTodayScheduleIndexResponseDto, GetWeeklyScheduleIndexResponseDto, ResponseDto} from './response';
 import {PostScheduleRequestDto, UpdateScheduleRequestDto} from "./request/schedule";
 import {
@@ -49,6 +49,20 @@ export const signUpRequest = async (requestBody: SignInRequestDto) => {
     const result = await axios.post(SIGN_UP_URL(), requestBody)
         .then(response => {
             const responseBody: SignUpResponseDto = response.data;
+            return responseBody;
+        }).catch(error => {
+            const responseBody: ResponseDto = error.response.data;
+            return responseBody;
+        })
+    return result;
+}
+
+const FIND_ID_URL = () => `${API_DOMAIN}/auth/find-id`;
+
+export const findIdRequest = async (requestBody: FindIdRequestDto) => {
+    const result = await axios.post(FIND_ID_URL(), requestBody)
+        .then(response =>{
+            const responseBody: FindIdResponseDto = response.data;
             return responseBody;
         }).catch(error => {
             const responseBody: ResponseDto = error.response.data;
