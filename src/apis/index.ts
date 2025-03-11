@@ -17,6 +17,8 @@ import {
     UpdateStateTodoResponseDto,
     UpdateTodoResponseDto
 } from "./response/todo";
+import {FindPasswordRequestDto, VerifiedNumberRequestDto} from "./request/mail";
+import {FindPasswordResponseDto, VerifiedNumberResponseDto} from "./response/mail";
 
 const DOMAIN = import.meta.env.VITE_API_URL;
 
@@ -63,6 +65,34 @@ export const findIdRequest = async (requestBody: FindIdRequestDto) => {
     const result = await axios.post(FIND_ID_URL(), requestBody)
         .then(response =>{
             const responseBody: FindIdResponseDto = response.data;
+            return responseBody;
+        }).catch(error => {
+            const responseBody: ResponseDto = error.response.data;
+            return responseBody;
+        })
+    return result;
+}
+
+const FIND_PASSWORD_URL = () => `${API_DOMAIN}/mail/send`;
+
+export const findPasswordRequest = async (requestBody: FindPasswordRequestDto) => {
+    const result = await axios.post(FIND_PASSWORD_URL(), requestBody)
+        .then(response => {
+            const responseBody: FindPasswordResponseDto = response.data;
+            return responseBody;
+        }).catch(error => {
+            const responseBody: ResponseDto = error.response.data;
+            return responseBody;
+        })
+    return result;
+}
+
+const VERIFIED_NUMBER_URL = () => `${API_DOMAIN}/mail/verified`;
+
+export const verifiedNumberRequest = async (requestBody: VerifiedNumberRequestDto) => {
+    const result = await axios.post(VERIFIED_NUMBER_URL(), requestBody)
+        .then(response => {
+            const responseBody: VerifiedNumberResponseDto = response.data;
             return responseBody;
         }).catch(error => {
             const responseBody: ResponseDto = error.response.data;

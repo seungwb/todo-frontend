@@ -334,24 +334,46 @@ export default function Authentication() {
 
     const FindPasswordCard = () => {
         const [email, setEmail] = useState<string>("")
-        const [phone, setPhone] = useState<string>("")
+        const [verificationCode, setVerificationCode] = useState<string>("")
+        const [isEmailSent, setIsEmailSent] = useState<boolean>(false)
         const emailRef = useRef<HTMLInputElement | null>(null)
-        const phoneRef = useRef<HTMLInputElement | null>(null)
+        const verificationCodeRef = useRef<HTMLInputElement | null>(null)
 
         const onEmailChangeHandler = (e: ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)
-        const onPhoneChangeHandler = (e: ChangeEvent<HTMLInputElement>) => setPhone(e.target.value)
+        const onVerificationCodeChangeHandler = (e: ChangeEvent<HTMLInputElement>) => setVerificationCode(e.target.value)
 
         const onEmailKeyDownHandler = (e: KeyboardEvent<HTMLInputElement>) => {
-            if (e.key === "Enter") phoneRef.current?.focus()
+            if (e.key === "Enter" && !isEmailSent) {
+                onSendVerificationCodeHandler()
+            }
         }
 
-        const onPhoneKeyDownHandler = (e: KeyboardEvent<HTMLInputElement>) => {
-            if (e.key === "Enter") onFindPasswordButtonClickHandler()
+        const onVerificationCodeKeyDownHandler = (e: KeyboardEvent<HTMLInputElement>) => {
+            if (e.key === "Enter" && isEmailSent) onVerifyCodeButtonClickHandler()
         }
 
-        const onFindPasswordButtonClickHandler = () => {
-            // Implement find password logic here
-            console.log("Finding password for:", email, phone)
+        const onSendVerificationCodeHandler = () => {
+            // Email validation before sending
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                alert("올바른 이메일 형식이 아닙니다.")
+                return
+            }
+
+            // This will be implemented by the user
+            console.log("Sending verification code to:", email)
+
+            // Disable email input after sending
+            setIsEmailSent(true)
+
+            // Focus on verification code input
+            setTimeout(() => {
+                verificationCodeRef.current?.focus()
+            }, 100)
+        }
+
+        const onVerifyCodeButtonClickHandler = () => {
+            // Implement verification logic here
+            console.log("Verifying code:", verificationCode)
         }
 
         return (
@@ -362,34 +384,69 @@ export default function Authentication() {
                 className="w-full max-w-md"
             >
                 <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">비밀번호 찾기</h2>
-                <InputBox
-                    ref={emailRef}
-                    label="이메일 주소"
-                    type="text"
-                    placeholder="이메일을 입력해주세요."
-                    value={email}
-                    onChange={onEmailChangeHandler}
-                    onKeyDown={onEmailKeyDownHandler}
-                    errorMessage="올바른 이메일 형식이 아닙니다."
-                    onValidate={(value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)}
-                />
-                <InputBox
-                    ref={phoneRef}
-                    label="휴대전화번호"
-                    type="text"
-                    placeholder="전화번호를 입력해주세요. ex)01012345678"
-                    value={phone}
-                    onChange={onPhoneChangeHandler}
-                    onKeyDown={onPhoneKeyDownHandler}
-                    errorMessage="올바른 전화번호 형식이 아닙니다."
-                    onValidate={(value) => /^[0-9]{11,13}$/.test(value)}
-                />
+
+                {/* 이메일 입력 및 인증번호 받기 버튼 */}
+                <div className="mb-4">
+                    <div className="flex flex-col">
+                        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                            이메일 주소
+                        </label>
+                        <div className="flex gap-2">
+                            <input
+                                ref={emailRef}
+                                id="email"
+                                type="email"
+                                placeholder="이메일을 입력해주세요."
+                                value={email}
+                                onChange={onEmailChangeHandler}
+                                onKeyDown={onEmailKeyDownHandler}
+                                disabled={isEmailSent}
+                                className={`flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 ${isEmailSent ? "bg-gray-100" : ""}`}
+                            />
+                            <button
+                                onClick={onSendVerificationCodeHandler}
+                                disabled={isEmailSent}
+                                className="whitespace-nowrap bg-blue-600 text-white font-medium py-2 px-4 rounded-md hover:bg-blue-700 transition duration-300 ease-in-out disabled:bg-blue-400"
+                            >
+                                인증 번호 받기
+                            </button>
+                        </div>
+                        {email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && (
+                            <p className="text-sm text-red-600 mt-1">올바른 이메일 형식이 아닙니다.</p>
+                        )}
+                    </div>
+                </div>
+
+                {/* 인증 번호 입력 */}
+                <div className="mb-4">
+                    <div className="flex flex-col">
+                        <label htmlFor="verificationCode" className="block text-sm font-medium text-gray-700 mb-1">
+                            인증 번호
+                        </label>
+                        <input
+                            ref={verificationCodeRef}
+                            id="verificationCode"
+                            type="text"
+                            placeholder="이메일로 받은 인증 번호를 입력해주세요."
+                            value={verificationCode}
+                            onChange={onVerificationCodeChangeHandler}
+                            onKeyDown={onVerificationCodeKeyDownHandler}
+                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2"
+                        />
+                        {verificationCode === "" && isEmailSent && (
+                            <p className="text-sm text-red-600 mt-1">인증 번호를 입력해주세요.</p>
+                        )}
+                    </div>
+                </div>
+
                 <button
-                    onClick={onFindPasswordButtonClickHandler}
-                    className="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg mt-6 hover:bg-blue-700 transition duration-300 ease-in-out transform hover:-translate-y-1"
+                    onClick={onVerifyCodeButtonClickHandler}
+                    disabled={!isEmailSent}
+                    className="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg mt-6 hover:bg-blue-700 transition duration-300 ease-in-out transform hover:-translate-y-1 disabled:bg-blue-400 disabled:transform-none disabled:hover:-translate-y-0"
                 >
                     비밀번호 찾기
                 </button>
+
                 <div className="flex justify-center text-gray-600 mt-4">
           <span className="text-blue-600 cursor-pointer hover:underline" onClick={() => setView("sign-in")}>
             로그인으로 돌아가기
