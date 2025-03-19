@@ -4,12 +4,14 @@ import { type ChangeEvent, type KeyboardEvent, useRef, useState } from "react"
 import { useCookies } from "react-cookie"
 import { useNavigate } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
-import {findIdRequest, signInRequest, signUpRequest} from "../../apis"
+import {findIdRequest, findPasswordRequest, signInRequest, signUpRequest, verifiedNumberRequest} from "../../apis"
 import type {FindIdRequestDto, SignInRequestDto, SignUpRequestDto} from "../../apis/request/auth"
 import type {FindIdResponseDto, SignInResponseDto, SignUpResponseDto} from "../../apis/response/auth"
 import type { ResponseDto } from "../../apis/response"
 import { CALENDAR_PATH, MAIN_PATH } from "../../constants"
 import InputBox from "../../components/InputBox"
+import {FindPasswordResponseDto, VerifiedNumberResponseDto} from "../../apis/response/mail";
+import {FindPasswordRequestDto, VerifiedNumberRequestDto} from "../../apis/request/mail";
 
 export default function Authentication() {
     const [view, setView] = useState<"sign-in" | "sign-up" | "find-id" | "find-password">("sign-in")
@@ -334,13 +336,13 @@ export default function Authentication() {
 
     const FindPasswordCard = () => {
         const [email, setEmail] = useState<string>("")
-        const [verificationCode, setVerificationCode] = useState<string>("")
+        const [number, setNumber] = useState<string>("")
         const [isEmailSent, setIsEmailSent] = useState<boolean>(false)
         const emailRef = useRef<HTMLInputElement | null>(null)
         const verificationCodeRef = useRef<HTMLInputElement | null>(null)
 
         const onEmailChangeHandler = (e: ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)
-        const onVerificationCodeChangeHandler = (e: ChangeEvent<HTMLInputElement>) => setVerificationCode(e.target.value)
+        const onVerificationCodeChangeHandler = (e: ChangeEvent<HTMLInputElement>) => setNumber(e.target.value)
 
         const onEmailKeyDownHandler = (e: KeyboardEvent<HTMLInputElement>) => {
             if (e.key === "Enter" && !isEmailSent) {
@@ -352,15 +354,27 @@ export default function Authentication() {
             if (e.key === "Enter" && isEmailSent) onVerifyCodeButtonClickHandler()
         }
 
+        const findPasswordResponse = (responseBody: FindPasswordResponseDto | ResponseDto | null) => {
+            if (!responseBody) {
+                alert("네트워크 이상입니다.")
+                return
+            }
+            const { code } = responseBody
+            if (code === "DBE") alert("데이터베이스 오류입니다.")
+            if (code === "NU") alert("회원가입 되어있는 이메일이 아닙니다.")
+            if (code !== "SU") return
+            console.log(email+"로 인증코드를 발송하였습니다.")
+        }
+
         const onSendVerificationCodeHandler = () => {
             // Email validation before sending
             if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
                 alert("올바른 이메일 형식이 아닙니다.")
                 return
             }
+            const requestBody:FindPasswordRequestDto = {email}
 
-            // This will be implemented by the user
-            console.log("Sending verification code to:", email)
+            findPasswordRequest(requestBody).then(findPasswordResponse)
 
             // Disable email input after sending
             setIsEmailSent(true)
@@ -371,9 +385,23 @@ export default function Authentication() {
             }, 100)
         }
 
+        //               TODO : 비밀번호 재설정에 대하여 고민해봐야함 비밀번호 그대로 노출 시 보안 우려
+        const verifiedNumberResponse = (responseBody: VerifiedNumberResponseDto | ResponseDto | null) => {
+            if (!responseBody) {
+                alert("네트워크 이상입니다.")
+                return
+            }
+            const { code } = responseBody
+            if (code === "DBE") alert("데이터베이스 오류입니다.")
+            if (code === "NN") alert("인증번호가 틀렸습니다.")
+            if (code !== "SU") return
+            alert("완료")
+            setView("sign-in")
+        }
+
         const onVerifyCodeButtonClickHandler = () => {
-            // Implement verification logic here
-            console.log("Verifying code:", verificationCode)
+            const requestBody: VerifiedNumberRequestDto = {number}
+            verifiedNumberRequest(requestBody).then(verifiedNumberResponse)
         }
 
         return (
@@ -428,12 +456,12 @@ export default function Authentication() {
                             id="verificationCode"
                             type="text"
                             placeholder="이메일로 받은 인증 번호를 입력해주세요."
-                            value={verificationCode}
+                            value={number}
                             onChange={onVerificationCodeChangeHandler}
                             onKeyDown={onVerificationCodeKeyDownHandler}
                             className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2"
                         />
-                        {verificationCode === "" && isEmailSent && (
+                        {number === "" && isEmailSent && (
                             <p className="text-sm text-red-600 mt-1">인증 번호를 입력해주세요.</p>
                         )}
                     </div>

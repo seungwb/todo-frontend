@@ -9,6 +9,7 @@ enum ResponseCode{
     DUPLICATE_NICKNAME = "DN",
     NOT_EXISTED_SCHEDULE = "NS",
     NOT_EXISTED_TODO = "NT",
+    NOT_MATCH_NUMBER = "NN",
 
     //HTTP Status 401
     SIGN_IN_FAIL = "SF",
