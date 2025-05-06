@@ -17,10 +17,10 @@ export default function IndexPage() {
     const [todos, setTodos] = useState([])
 
     useEffect(() => {
-        fetchWeatherEvents().then()
-        fetchTodayEvents().then()
-        fetchWeeklyEvents().then()
-        fetchTodoEvents().then()
+        fetchWeatherEvents()
+        fetchTodayEvents()
+        fetchWeeklyEvents()
+        fetchTodoEvents()
     }, [])
 
     const getTodayDate = (): string => {
@@ -110,11 +110,8 @@ export default function IndexPage() {
 
     const fetchTodoEvents = async () => {
         const accessToken = cookies.accessToken
+        if (!accessToken) return
         const responseBody = await getTodoRequest(accessToken).then(getTodoResponse)
-
-        if (!responseBody) {
-            return
-        }
 
         const { todoListItems } = responseBody
         setTodos(todoListItems)
