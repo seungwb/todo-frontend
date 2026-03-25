@@ -1,31 +1,39 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import {getTodayScheduleRequest, getTodoRequest, getWeatherRequest, getWeeklyScheduleRequest} from "../apis"
-import type { ScheduleListItems } from "../types/interface"
+import { getTodayScheduleRequest, getTodoRequest, getWeatherRequest, getWeeklyScheduleRequest } from "../apis"
+import type { ScheduleListItems, TodoListItems } from "../types/interface"
 import { useCookies } from "react-cookie"
-import type {GetTodayScheduleIndexResponseDto, GetWeeklyScheduleIndexResponseDto, ResponseDto} from "../apis/response"
+import type { GetTodayScheduleIndexResponseDto, GetWeeklyScheduleIndexResponseDto, ResponseDto } from "../apis/response"
 import { motion } from "framer-motion"
-import { Sun, Calendar, CheckSquare, AlertTriangle } from "lucide-react"
-import type {GetTodoResponseDto} from "../apis/response/todo";
+import { Sun, Cloud, Calendar, CheckSquare, CalendarDays } from "lucide-react"
+import type { GetTodoResponseDto } from "../apis/response/todo"
+import ResponseCode from "../types/enum/response-code.enum"
+
+interface WeatherData {
+    name: string;
+    main: { temp: number };
+    weather: { description: string }[];
+}
 
 export default function IndexPage() {
     const [cookies] = useCookies()
-    const [weather, setWeather] = useState(null)
+    const [weather, setWeather] = useState<WeatherData | null>(null)
     const [todaySchedules, setTodaySchedules] = useState<ScheduleListItems[]>([])
     const [thisWeekSchedules, setThisWeekSchedules] = useState<ScheduleListItems[]>([])
-    const [todos, setTodos] = useState([])
+    const [todos, setTodos] = useState<TodoListItems[]>([])
 
     useEffect(() => {
         fetchWeatherEvents()
         fetchTodayEvents()
         fetchWeeklyEvents()
         fetchTodoEvents()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     const getTodayDate = (): string => {
         const today = new Date()
-        return today.toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric" })
+        return today.toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric", weekday: "long" })
     }
 
     const getThisWeekRange = (): { start: string; end: string } => {
@@ -36,8 +44,8 @@ export default function IndexPage() {
         endOfWeek.setDate(today.getDate() - today.getDay() + 7)
 
         return {
-            start: startOfWeek.toISOString().split("T")[0], // YYYY-MM-DD
-            end: endOfWeek.toISOString().split("T")[0], // YYYY-MM-DD
+            start: startOfWeek.toISOString().split("T")[0],
+            end: endOfWeek.toISOString().split("T")[0],
         }
     }
 
@@ -47,12 +55,9 @@ export default function IndexPage() {
     }
 
     const getTodayScheduleResponse = (responseBody: GetTodayScheduleIndexResponseDto | ResponseDto | null) => {
-        if (!responseBody) {
-            alert("네트워크 이상입니다.")
-            return
-        }
+        if (!responseBody) { alert("네트워크 이상입니다."); return }
         const { code } = responseBody
-        if (code !== "SU") return
+        if (code !== ResponseCode.SUCCESS) return
         return responseBody
     }
 
@@ -62,23 +67,14 @@ export default function IndexPage() {
         const today = new Date().toISOString().split("T")[0]
         const responseBody = await getTodayScheduleRequest(today, accessToken).then(getTodayScheduleResponse)
         if (responseBody && "todayScheduleListItems" in responseBody) {
-            const scheduleList: ScheduleListItems[] = responseBody.todayScheduleListItems.map((e: any) => ({
-                ...e,
-                startDate: new Date(e.startDate).toLocaleDateString("ko-KR"),
-                endDate: new Date(e.endDate).toLocaleDateString("ko-KR"),
-                regDate: new Date(e.regDate).toLocaleDateString("ko-KR"),
-            }))
-            setTodaySchedules(scheduleList)
+            setTodaySchedules(responseBody.todayScheduleListItems)
         }
     }
 
     const getWeeklyScheduleResponse = (responseBody: GetWeeklyScheduleIndexResponseDto | ResponseDto | null) => {
-        if (!responseBody) {
-            alert("네트워크 이상입니다.")
-            return
-        }
+        if (!responseBody) { alert("네트워크 이상입니다."); return }
         const { code } = responseBody
-        if (code !== "SU") return
+        if (code !== ResponseCode.SUCCESS) return
         return responseBody
     }
 
@@ -88,23 +84,14 @@ export default function IndexPage() {
         const { start, end } = getThisWeekRange()
         const responseBody = await getWeeklyScheduleRequest(start, end, accessToken).then(getWeeklyScheduleResponse)
         if (responseBody && "weeklyScheduleListItems" in responseBody) {
-            const scheduleList: ScheduleListItems[] = responseBody.weeklyScheduleListItems.map((e: any) => ({
-                ...e,
-                startDate: new Date(e.startDate).toLocaleDateString("ko-KR"),
-                endDate: new Date(e.endDate).toLocaleDateString("ko-KR"),
-                regDate: new Date(e.regDate).toLocaleDateString("ko-KR"),
-            }))
-            setThisWeekSchedules(scheduleList)
+            setThisWeekSchedules(responseBody.weeklyScheduleListItems)
         }
     }
 
     const getTodoResponse = (responseBody: GetTodoResponseDto | ResponseDto | null) => {
-        if (!responseBody) {
-            alert("네트워크 이상입니다.")
-            return
-        }
+        if (!responseBody) { alert("네트워크 이상입니다."); return }
         const { code } = responseBody
-        if (code !== "SU") return
+        if (code !== ResponseCode.SUCCESS) return
         return responseBody
     }
 
@@ -112,123 +99,180 @@ export default function IndexPage() {
         const accessToken = cookies.accessToken
         if (!accessToken) return
         const responseBody = await getTodoRequest(accessToken).then(getTodoResponse)
+        if (!responseBody || !("todoListItems" in responseBody)) return
 
-        const { todoListItems } = responseBody
+        const { todoListItems } = responseBody as GetTodoResponseDto
         setTodos(todoListItems)
     }
 
-    const cardVariants = {
-        hidden: { opacity: 0, y: 20 },
-        visible: { opacity: 1, y: 0 },
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        visible: {
+            opacity: 1,
+            transition: { staggerChildren: 0.1 },
+        },
     }
 
+    const cardVariants = {
+        hidden: { opacity: 0, y: 24 },
+        visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
+    }
+
+    const { start, end } = getThisWeekRange()
 
     return (
-        <div className="p-6 bg-gray-100 min-h-screen">
-            <h1 className="text-3xl font-bold text-gray-800 mb-6">대시보드</h1>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="min-h-screen bg-[#0d0d12] px-4 py-8">
+            <div className="max-w-5xl mx-auto">
+            {/* 상단 인사 섹션 */}
+            <motion.div
+                initial={{ opacity: 0, y: -16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4 }}
+                className="mb-8"
+            >
+                <p className="text-slate-500 text-sm mb-1">{getTodayDate()}</p>
+                <h1 className="text-2xl font-bold text-slate-100">안녕하세요 👋</h1>
+                <p className="text-slate-400 text-sm mt-1">오늘도 좋은 하루 되세요.</p>
+            </motion.div>
+
+            <motion.div
+                className="grid grid-cols-1 md:grid-cols-2 gap-6"
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+            >
+                {/* 날씨 카드 */}
                 <motion.section
-                    className="bg-gradient-to-br from-blue-400 to-blue-600 p-6 rounded-2xl shadow-lg text-white"
                     variants={cardVariants}
-                    initial="hidden"
-                    animate="visible"
-                    transition={{ delay: 0.1 }}
+                    className="bg-gradient-to-br from-indigo-500/15 to-violet-600/15 border border-indigo-500/20 rounded-2xl p-6"
                 >
-                    <h2 className="text-xl font-semibold flex items-center mb-4">
-                        <Sun className="mr-2" /> 오늘의 날씨
-                    </h2>
+                    <div className="flex items-center gap-2 mb-4">
+                        <Sun size={18} className="text-indigo-400" />
+                        <h2 className="text-sm font-medium text-indigo-400 uppercase tracking-wider">오늘의 날씨</h2>
+                    </div>
                     {weather ? (
                         <div>
-                            <p className="text-2xl font-bold">{weather.main.temp}°C</p>
-                            <p className="text-lg">{weather.weather[0].description}</p>
-                            <p className="text-sm mt-2">{weather.name}</p>
+                            <div className="flex items-end gap-3 mb-2">
+                                <span className="text-5xl font-bold text-slate-100">{Math.round(weather.main?.temp)}°</span>
+                                <span className="text-slate-400 text-lg mb-1">C</span>
+                            </div>
+                            <p className="text-slate-300 text-base capitalize">{weather.weather?.[0]?.description}</p>
+                            <p className="text-slate-500 text-sm mt-1">{weather.name}</p>
                         </div>
                     ) : (
-                        <p className="text-lg">날씨 정보를 불러오는 중...</p>
+                        <div className="flex items-center gap-2 text-slate-500">
+                            <Cloud size={16} />
+                            <span className="text-sm">날씨 정보를 불러오는 중...</span>
+                        </div>
                     )}
                 </motion.section>
 
+                {/* 오늘의 일정 카드 */}
                 <motion.section
-                    className="bg-white p-6 rounded-2xl shadow-lg"
                     variants={cardVariants}
-                    initial="hidden"
-                    animate="visible"
-                    transition={{ delay: 0.2 }}
+                    className="bg-[#13131a] border border-white/[0.06] rounded-2xl p-6"
                 >
-                    <h2 className="text-xl font-semibold flex items-center mb-4">
-                        <Calendar className="mr-2" /> 오늘의 일정 ({getTodayDate()})
-                    </h2>
+                    <div className="flex items-center gap-2 mb-4">
+                        <Calendar size={18} className="text-indigo-400" />
+                        <h2 className="text-sm font-medium text-slate-400 uppercase tracking-wider">오늘의 일정</h2>
+                        {todaySchedules.length > 0 && (
+                            <span className="ml-auto bg-indigo-500/15 text-indigo-400 rounded-lg px-2.5 py-1 text-xs font-medium">
+                                {todaySchedules.length}건
+                            </span>
+                        )}
+                    </div>
                     {todaySchedules.length > 0 ? (
-                        <ul className="space-y-3">
-                            {todaySchedules.map((schedule, index) => (
-                                <li key={index} className="bg-gray-50 p-3 rounded-lg">
-                                    <p className="font-medium text-gray-800">{schedule.title}</p>
-                                    <p className="text-sm text-gray-600">
-                                        {schedule.startDate} - {schedule.endDate}
+                        <ul className="space-y-2">
+                            {todaySchedules.map((schedule) => (
+                                <li key={schedule.id} className="bg-[#1c1c28] border border-white/[0.06] rounded-xl px-4 py-3">
+                                    <p className="text-slate-100 text-sm font-medium">{schedule.title}</p>
+                                    <p className="text-slate-500 text-xs mt-0.5">
+                                        {new Date(schedule.startDate).toLocaleDateString("ko-KR")} — {new Date(schedule.endDate).toLocaleDateString("ko-KR")}
                                     </p>
                                 </li>
                             ))}
                         </ul>
                     ) : (
-                        <p className="text-gray-500">오늘 예정된 일정이 없습니다.</p>
+                        <div className="flex flex-col items-center justify-center py-6 gap-2">
+                            <Calendar size={28} className="text-slate-700" />
+                            <p className="text-slate-600 text-sm">오늘 예정된 일정이 없습니다.</p>
+                        </div>
                     )}
                 </motion.section>
 
+                {/* 할일 목록 카드 */}
                 <motion.section
-                    className="bg-white p-6 rounded-2xl shadow-lg"
                     variants={cardVariants}
-                    initial="hidden"
-                    animate="visible"
-                    transition={{ delay: 0.3 }}
+                    className="bg-[#13131a] border border-white/[0.06] rounded-2xl p-6"
                 >
-                    <h2 className="text-xl font-semibold flex items-center mb-4">
-                        <CheckSquare className="mr-2" /> 할 일 목록
-                    </h2>
+                    <div className="flex items-center gap-2 mb-4">
+                        <CheckSquare size={18} className="text-indigo-400" />
+                        <h2 className="text-sm font-medium text-slate-400 uppercase tracking-wider">할 일 목록</h2>
+                        {todos.length > 0 && (
+                            <span className="ml-auto bg-indigo-500/15 text-indigo-400 rounded-lg px-2.5 py-1 text-xs font-medium">
+                                {todos.filter(t => !t.state).length}개 남음
+                            </span>
+                        )}
+                    </div>
                     {todos.length > 0 ? (
-                    <ul className="space-y-2">
-                        {todos.map((todo, index) => (
-                            <li key={index} className="flex items-center">
-                                <input
-                                    type="checkbox"
-                                    readOnly={true}
-                                    checked={todo.state}
-                                    className="mr-2 form-checkbox h-5 w-5 text-blue-600 transition duration-150 ease-in-out"
-                                />
-                                <span className={`${todo.state ?  "text-gray-800" : "line-through text-gray-400"}`}>{todo.title}</span>
-                            </li>
-                        ))}
-                    </ul>
-                        ): (
-                        <p className="text-gray-500">오늘 예정된 할일이 없습니다.</p>
+                        <ul className="space-y-2">
+                            {todos.map((todo) => (
+                                <li key={todo.id} className="flex items-center gap-3 bg-[#1c1c28] border border-white/[0.06] rounded-xl px-4 py-3">
+                                    <div className={`w-4 h-4 rounded-full border flex-shrink-0 flex items-center justify-center ${todo.state ? "bg-indigo-500 border-indigo-500" : "border-slate-600"}`}>
+                                        {todo.state && (
+                                            <svg width="8" height="6" viewBox="0 0 8 6" fill="none">
+                                                <path d="M1 3L3 5L7 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                            </svg>
+                                        )}
+                                    </div>
+                                    <span className={`text-sm ${todo.state ? "line-through text-slate-600" : "text-slate-100"}`}>
+                                        {todo.title}
+                                    </span>
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <div className="flex flex-col items-center justify-center py-6 gap-2">
+                            <CheckSquare size={28} className="text-slate-700" />
+                            <p className="text-slate-600 text-sm">등록된 할일이 없습니다.</p>
+                        </div>
                     )}
                 </motion.section>
 
+                {/* 이번 주 일정 카드 */}
                 <motion.section
-                    className="bg-gradient-to-br from-indigo-600 to-purple-700 p-6 rounded-2xl shadow-lg text-white md:col-span-2 lg:col-span-3"
                     variants={cardVariants}
-                    initial="hidden"
-                    animate="visible"
-                    transition={{ delay: 0.4 }}
+                    className="bg-[#13131a] border border-white/[0.06] rounded-2xl p-6 md:col-span-2"
                 >
-                    <h2 className="text-xl font-semibold flex items-center mb-4 text-shadow">
-                        <AlertTriangle className="mr-2" /> 이번 주 일정 ({getThisWeekRange().start} - {getThisWeekRange().end})
-                    </h2>
-                    <p className="text-lg mb-4 text-shadow">📅 이번 주 총 {thisWeekSchedules.length}개의 일정이 있습니다.</p>
+                    <div className="flex items-center gap-2 mb-1">
+                        <CalendarDays size={18} className="text-indigo-400" />
+                        <h2 className="text-sm font-medium text-slate-400 uppercase tracking-wider">이번 주 일정</h2>
+                        {thisWeekSchedules.length > 0 && (
+                            <span className="ml-auto bg-indigo-500/15 text-indigo-400 rounded-lg px-2.5 py-1 text-xs font-medium">
+                                총 {thisWeekSchedules.length}건
+                            </span>
+                        )}
+                    </div>
+                    <p className="text-slate-600 text-xs mb-4">{start} — {end}</p>
                     {thisWeekSchedules.length > 0 ? (
-                        <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {thisWeekSchedules.map((schedule, index) => (
-                                <li key={index} className="bg-indigo-100 bg-opacity-20 p-3 rounded-lg text-shadow">
-                                    <p className="font-medium text-indigo-700">{schedule.title}</p>
-                                    <p className="text-sm text-indigo-500">
-                                        {schedule.startDate} - {schedule.endDate}
+                        <ul className="space-y-2">
+                            {thisWeekSchedules.map((schedule) => (
+                                <li key={schedule.id} className="bg-[#1c1c28] border border-white/[0.06] rounded-xl px-4 py-3">
+                                    <p className="text-slate-100 text-sm font-medium">{schedule.title}</p>
+                                    <p className="text-slate-500 text-xs mt-0.5">
+                                        {new Date(schedule.startDate).toLocaleDateString("ko-KR")} — {new Date(schedule.endDate).toLocaleDateString("ko-KR")}
                                     </p>
                                 </li>
                             ))}
                         </ul>
                     ) : (
-                        <p className="text-shadow">이번 주 예정된 일정이 없습니다.</p>
+                        <div className="flex flex-col items-center justify-center py-6 gap-2">
+                            <CalendarDays size={28} className="text-slate-700" />
+                            <p className="text-slate-600 text-sm">이번 주 예정된 일정이 없습니다.</p>
+                        </div>
                     )}
                 </motion.section>
+            </motion.div>
             </div>
         </div>
     )

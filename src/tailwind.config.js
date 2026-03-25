@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-    darkMode: ["class"],
+    darkMode: "class",
     content: [
         "./pages/**/*.{ts,tsx}",
         "./components/**/*.{ts,tsx}",
@@ -18,18 +18,20 @@ module.exports = {
         },
         extend: {
             colors: {
-                border: "hsl(var(--border))",
-                input: "hsl(var(--input))",
-                ring: "hsl(var(--ring))",
-                background: "hsl(var(--background))",
-                foreground: "hsl(var(--foreground))",
-                primary: {
-                    DEFAULT: "hsl(var(--primary))",
-                    foreground: "hsl(var(--primary-foreground))",
+                surface: {
+                    DEFAULT: "#13131a",
+                    secondary: "#1c1c28",
                 },
-                secondary: {
-                    DEFAULT: "hsl(var(--secondary))",
-                    foreground: "hsl(var(--secondary-foreground))",
+                border: {
+                    DEFAULT: "rgba(255,255,255,0.06)",
+                },
+                primary: {
+                    DEFAULT: "#6366f1",
+                    hover: "#818cf8",
+                },
+                accent: {
+                    DEFAULT: "#8b5cf6",
+                    hover: "#a78bfa",
                 },
                 destructive: {
                     DEFAULT: "hsl(var(--destructive))",
@@ -38,10 +40,6 @@ module.exports = {
                 muted: {
                     DEFAULT: "hsl(var(--muted))",
                     foreground: "hsl(var(--muted-foreground))",
-                },
-                accent: {
-                    DEFAULT: "hsl(var(--accent))",
-                    foreground: "hsl(var(--accent-foreground))",
                 },
                 popover: {
                     DEFAULT: "hsl(var(--popover))",

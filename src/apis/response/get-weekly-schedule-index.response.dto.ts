@@ -1,5 +1,6 @@
+import ResponseDto from "./response.dto";
 import ScheduleListItems from "../../types/interface/schedule-list-items.interface";
 
-export default interface GetWeeklyScheduleIndexResponseDto extends Response{
+export default interface GetWeeklyScheduleIndexResponseDto extends ResponseDto {
     weeklyScheduleListItems: ScheduleListItems[];
 }

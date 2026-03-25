@@ -1,4 +1,3 @@
-import React, {useState} from 'react';
 import './index.css';
 import Authentication from "./views/Authentication";
 import {Routes, Route} from "react-router-dom";

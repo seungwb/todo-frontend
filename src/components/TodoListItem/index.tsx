@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { type MouseEvent, useState } from "react"
 import { motion } from "framer-motion"
 import { Edit, Trash2, Check, ChevronDown, Loader2 } from "lucide-react"
 import type { DeleteTodoResponseDto, UpdateStateTodoResponseDto } from "../../apis/response/todo"
@@ -7,66 +7,55 @@ import { useCookies } from "react-cookie"
 import type { UpdateStateTodoRequestDto } from "../../apis/request/todo"
 import { deleteTodoRequest, updateStateTodoRequest } from "../../apis"
 import TodoModal from "../TodoModal"
+import type { TodoListItems } from "../../types/interface"
+import ResponseCode from "../../types/enum/response-code.enum"
 
-export default function TodoListItem({ todo, onSave }) {
+interface TodoListItemProps {
+    todo: TodoListItems
+    onSave: () => void
+}
+
+export default function TodoListItem({ todo, onSave }: TodoListItemProps) {
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [isExpanded, setIsExpanded] = useState(false)
     const [isDeleting, setIsDeleting] = useState(false)
-    const [updateData, setUpdateData] = useState({
-        id: 0,
-        title: "",
-        content: "",
-    })
+    const [updateData, setUpdateData] = useState({ id: 0, title: "", content: "" })
     const [updateState, setUpdateState] = useState(todo.state)
     const [cookies] = useCookies()
 
     const updateStateTodoResponse = (responseBody: UpdateStateTodoResponseDto | ResponseDto | null) => {
-        if (!responseBody) {
-            alert("네트워크 이상입니다.")
-            return
-        }
+        if (!responseBody) { alert("네트워크 이상입니다."); return }
         const { code } = responseBody
-        if (code === "DBE") alert("데이터베이스 오류입니다.")
-        if (code === "VF" || code === "NU") alert("로그인이 필요한 기능입니다.")
-        if (code === "NT") alert("삭제 된 할일입니다.")
-        if (code !== "SU") return
+        if (code === ResponseCode.DATABASE_ERROR) alert("데이터베이스 오류입니다.")
+        if (code === ResponseCode.VALIDATION_FAILED || code === ResponseCode.NOT_EXISTED_USER) alert("로그인이 필요한 기능입니다.")
+        if (code === ResponseCode.NOT_EXISTED_TODO) alert("삭제 된 할일입니다.")
+        if (code !== ResponseCode.SUCCESS) return
     }
 
-    const onToggleHandler = (e) => {
+    const onToggleHandler = (e: MouseEvent) => {
         if (isModalOpen) return
-        if (e.target.tagName === "BUTTON") return
-        if (e.target.closest(".action-buttons")) return
+        if ((e.target as HTMLElement).tagName === "BUTTON") return
+        if ((e.target as HTMLElement).closest(".action-buttons")) return
 
         const newState = !updateState
         const accessToken = cookies.accessToken
-
-        const requestBody: UpdateStateTodoRequestDto = {
-            state: newState,
-        }
-
+        const requestBody: UpdateStateTodoRequestDto = { state: newState }
         updateStateTodoRequest(todo.id, requestBody, accessToken).then(updateStateTodoResponse)
         setUpdateState(newState)
     }
 
-    const onUpdateButtonHandler = (todo) => {
-        setUpdateData({
-            id: todo.id,
-            title: todo.title,
-            content: todo.content,
-        })
+    const onUpdateButtonHandler = (todo: TodoListItems) => {
+        setUpdateData({ id: todo.id, title: todo.title, content: todo.content || "" })
         setIsModalOpen(true)
     }
 
     const deleteTodoResponse = (responseBody: DeleteTodoResponseDto | ResponseDto | null) => {
-        if (!responseBody) {
-            alert("네트워크 이상입니다.")
-            return
-        }
+        if (!responseBody) { alert("네트워크 이상입니다."); return }
         const { code } = responseBody
-        if (code === "DBE") alert("데이터베이스 오류입니다.")
-        if (code === "VF" || code === "NU") alert("로그인이 필요한 기능입니다.")
-        if (code === "NT") alert("이미 삭제된 일정입니다.")
-        if (code !== "SU") return
+        if (code === ResponseCode.DATABASE_ERROR) alert("데이터베이스 오류입니다.")
+        if (code === ResponseCode.VALIDATION_FAILED || code === ResponseCode.NOT_EXISTED_USER) alert("로그인이 필요한 기능입니다.")
+        if (code === ResponseCode.NOT_EXISTED_TODO) alert("이미 삭제된 할일입니다.")
+        if (code !== ResponseCode.SUCCESS) return
 
         alert("삭제 되었습니다.")
         setIsDeleting(false)
@@ -75,74 +64,58 @@ export default function TodoListItem({ todo, onSave }) {
 
     const onDeleteButtonHandler = () => {
         setIsDeleting(true)
-        const id = todo.id
         const accessToken = cookies.accessToken
-        deleteTodoRequest(id, accessToken).then(deleteTodoResponse)
+        deleteTodoRequest(todo.id, accessToken).then(deleteTodoResponse)
     }
 
-    const formatDate = (dateString) => {
+    const formatDate = (dateString: Date | string) => {
         if (!dateString) return ""
-
         const date = new Date(dateString)
-        return new Intl.DateTimeFormat("ko-KR", {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-        }).format(date)
+        return new Intl.DateTimeFormat("ko-KR", { year: "numeric", month: "long", day: "numeric" }).format(date)
     }
 
     return (
-        <div
-            className={`bg-white rounded-lg shadow-sm border-l-4 transition-all hover:shadow-md overflow-hidden ${
-                updateState ? "border-violet-500" : "border-slate-300 opacity-70"
-            }`}
-        >
-            <div className="p-5" onClick={onToggleHandler}>
+        <div className="bg-[#13131a] border border-white/[0.06] rounded-2xl hover:border-white/[0.10] hover:bg-[#1c1c28] transition-all overflow-hidden">
+            <div className="p-4" onClick={onToggleHandler}>
                 <div className="flex items-start gap-3">
+                    {/* 커스텀 체크박스 */}
                     <div
-                        className={`flex-shrink-0 w-6 h-6 rounded-full border flex items-center justify-center mt-1 cursor-pointer transition-colors ${
-                            updateState ? "border-slate-300 bg-white text-white" : "border-slate-300 bg-violet-500 text-white"
+                        className={`flex-shrink-0 w-5 h-5 rounded-md border flex items-center justify-center mt-0.5 cursor-pointer transition-all ${
+                            updateState
+                                ? "bg-gradient-to-br from-indigo-500 to-violet-600 border-transparent"
+                                : "border-white/[0.15] bg-transparent"
                         }`}
-                        onClick={(e) => {
-                            e.stopPropagation()
-                            onToggleHandler(e)
-                        }}
+                        onClick={(e) => { e.stopPropagation(); onToggleHandler(e) }}
                     >
-                        {!updateState && <Check size={14} />}
+                        {updateState && <Check size={12} className="text-white" strokeWidth={2.5} />}
                     </div>
 
+                    {/* 내용 */}
                     <div className="flex-1 min-w-0">
                         <div
-                            className="flex items-center justify-between cursor-pointer"
-                            onClick={(e) => {
-                                e.stopPropagation()
-                                setIsExpanded(!isExpanded)
-                            }}
+                            className="flex items-center justify-between cursor-pointer gap-2"
+                            onClick={(e) => { e.stopPropagation(); setIsExpanded(!isExpanded) }}
                         >
-                            <h3
-                                className={`font-medium text-lg transition-all ${
-                                    updateState ? "text-slate-900" : "text-slate-500 line-through"
-                                }`}
-                            >
+                            <h3 className={`font-medium text-sm leading-snug transition-all ${
+                                updateState ? "text-slate-100" : "text-slate-600 line-through"
+                            }`}>
                                 {todo.title}
                             </h3>
                             <ChevronDown
-                                size={18}
-                                className={`text-slate-400 transition-transform duration-200 ${
-                                    isExpanded ? "transform rotate-180" : ""
-                                }`}
+                                size={15}
+                                className={`flex-shrink-0 text-slate-600 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
                             />
                         </div>
+                        <p className="text-xs text-slate-600 mt-1">{formatDate(todo.regDate)}</p>
 
-                        <p className="text-sm text-slate-500 mt-1">등록일: {formatDate(todo.regDate)}</p>
-
-                        {isExpanded && (
+                        {/* 확장 내용 */}
+                        {isExpanded && todo.content && (
                             <motion.div
                                 initial={{ opacity: 0, height: 0 }}
                                 animate={{ opacity: 1, height: "auto" }}
                                 exit={{ opacity: 0, height: 0 }}
                                 transition={{ duration: 0.2 }}
-                                className="mt-3 text-slate-600"
+                                className="mt-3 pt-3 border-t border-white/[0.06] text-slate-400 text-sm leading-relaxed"
                             >
                                 {todo.content}
                             </motion.div>
@@ -151,6 +124,7 @@ export default function TodoListItem({ todo, onSave }) {
                 </div>
             </div>
 
+            {/* 액션 버튼 (확장 시) */}
             {isExpanded && (
                 <motion.div
                     initial={{ opacity: 0, height: 0 }}
@@ -158,36 +132,25 @@ export default function TodoListItem({ todo, onSave }) {
                     exit={{ opacity: 0, height: 0 }}
                     transition={{ duration: 0.2 }}
                 >
-                    <div className="action-buttons flex justify-end gap-2 p-3 pt-0 border-t border-slate-100">
+                    <div className="action-buttons flex justify-end gap-2 px-4 pb-4">
                         {updateState && (
                             <button
-                                onClick={(e) => {
-                                    e.stopPropagation()
-                                    onUpdateButtonHandler(todo)
-                                }}
-                                className="bg-amber-500 text-white py-1.5 px-4 rounded-md hover:bg-amber-600 transition-colors text-sm font-medium flex items-center"
+                                onClick={(e) => { e.stopPropagation(); onUpdateButtonHandler(todo) }}
+                                className="bg-white/[0.06] hover:bg-white/[0.10] text-slate-300 hover:text-indigo-400 rounded-xl px-3 py-1.5 text-xs font-medium flex items-center gap-1.5 transition-all"
                             >
-                                <Edit size={14} className="mr-1.5" /> 수정
+                                <Edit size={13} />
+                                수정
                             </button>
                         )}
                         <button
-                            onClick={(e) => {
-                                e.stopPropagation()
-                                onDeleteButtonHandler()
-                            }}
+                            onClick={(e) => { e.stopPropagation(); onDeleteButtonHandler() }}
                             disabled={isDeleting}
-                            className="bg-red-500 text-white py-1.5 px-4 rounded-md hover:bg-red-600 transition-colors text-sm font-medium flex items-center disabled:opacity-70"
+                            className="bg-white/[0.06] hover:bg-red-500/10 text-slate-300 hover:text-red-400 rounded-xl px-3 py-1.5 text-xs font-medium flex items-center gap-1.5 transition-all disabled:opacity-50"
                         >
                             {isDeleting ? (
-                                <motion.div
-                                    animate={{ rotate: 360 }}
-                                    transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
-                                    className="mr-1.5"
-                                >
-                                    <Loader2 size={14} />
-                                </motion.div>
+                                <Loader2 size={13} className="animate-spin" />
                             ) : (
-                                <Trash2 size={14} className="mr-1.5" />
+                                <Trash2 size={13} />
                             )}
                             삭제
                         </button>
@@ -197,12 +160,7 @@ export default function TodoListItem({ todo, onSave }) {
 
             {isModalOpen && (
                 <div className="isolate isolation-auto fixed z-50">
-                    <TodoModal
-                        isOpen={isModalOpen}
-                        onSave={onSave}
-                        onClose={() => setIsModalOpen(false)}
-                        initialData={updateData}
-                    />
+                    <TodoModal isOpen={isModalOpen} onSave={onSave} onClose={() => setIsModalOpen(false)} initialData={updateData} />
                 </div>
             )}
         </div>
