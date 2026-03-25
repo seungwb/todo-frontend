@@ -1,4 +1,4 @@
-
-export default interface VerifiedNumberRequestDto{
-    number: string
+export default interface VerifiedNumberRequestDto {
+    email: string;
+    number: string;
 }

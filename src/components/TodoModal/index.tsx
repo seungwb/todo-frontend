@@ -7,6 +7,7 @@ import type { PostTodoResponseDto, UpdateTodoResponseDto } from "../../apis/resp
 import type { ResponseDto } from "../../apis/response"
 import type { PostTodoRequestDto, UpdateTodoRequestDto } from "../../apis/request/todo"
 import { postTodoRequest, updateTodoRequest } from "../../apis"
+import ResponseCode from "../../types/enum/response-code.enum"
 
 interface TodoModalProps {
     isOpen: boolean
@@ -20,27 +21,16 @@ interface TodoModalProps {
 }
 
 const TodoModal: React.FC<TodoModalProps> = ({ isOpen, onSave, onClose, initialData }) => {
-    const [formData, setFormData] = useState({
-        title: "",
-        content: "",
-    })
+    const [formData, setFormData] = useState({ title: "", content: "" })
     const [isSaving, setIsSaving] = useState(false)
     const [error, setError] = useState("")
     const [cookies] = useCookies()
 
     useEffect(() => {
         if (initialData) {
-            // 기존 데이터가 있으면 수정 모드
-            setFormData({
-                title: initialData.title || "",
-                content: initialData.content || "",
-            })
+            setFormData({ title: initialData.title || "", content: initialData.content || "" })
         } else {
-            // 새로운 일정 추가 시
-            setFormData({
-                title: "",
-                content: "",
-            })
+            setFormData({ title: "", content: "" })
         }
         setError("")
     }, [initialData, onClose])
@@ -53,14 +43,11 @@ const TodoModal: React.FC<TodoModalProps> = ({ isOpen, onSave, onClose, initialD
 
     const postTodoResponse = (responseBody: PostTodoResponseDto | ResponseDto | null) => {
         setIsSaving(false)
-        if (!responseBody) {
-            alert("네트워크 이상입니다.")
-            return
-        }
+        if (!responseBody) { alert("네트워크 이상입니다."); return }
         const { code } = responseBody
-        if (code === "DBE") alert("데이터베이스 오류입니다.")
-        if (code === "VF" || code === "NU") alert("로그인이 필요한 기능입니다.")
-        if (code !== "SU") return
+        if (code === ResponseCode.DATABASE_ERROR) alert("데이터베이스 오류입니다.")
+        if (code === ResponseCode.VALIDATION_FAILED || code === ResponseCode.NOT_EXISTED_USER) alert("로그인이 필요한 기능입니다.")
+        if (code !== ResponseCode.SUCCESS) return
 
         alert("할일이 추가 되었습니다.")
         onSave()
@@ -68,36 +55,22 @@ const TodoModal: React.FC<TodoModalProps> = ({ isOpen, onSave, onClose, initialD
     }
 
     const onSubmitButtonHandler = () => {
-        if (!formData.title.trim()) {
-            setError("제목을 입력해주세요")
-            return
-        }
-
+        if (!formData.title.trim()) { setError("제목을 입력해주세요"); return }
         setIsSaving(true)
         const accessToken = cookies.accessToken
-        if (!accessToken) {
-            alert("로그인이 필요한 기능입니다.")
-            onClose()
-            return
-        }
-        const requestBody: PostTodoRequestDto = {
-            title: formData.title,
-            content: formData.content,
-        }
+        if (!accessToken) { alert("로그인이 필요한 기능입니다."); onClose(); return }
+        const requestBody: PostTodoRequestDto = { title: formData.title, content: formData.content }
         postTodoRequest(requestBody, accessToken).then(postTodoResponse)
     }
 
     const updateTodoResponse = (responseBody: UpdateTodoResponseDto | ResponseDto | null) => {
         setIsSaving(false)
-        if (!responseBody) {
-            alert("네트워크 이상입니다.")
-            return
-        }
+        if (!responseBody) { alert("네트워크 이상입니다."); return }
         const { code } = responseBody
-        if (code === "DBE") alert("데이터베이스 오류입니다.")
-        if (code === "VF" || code === "NU") alert("로그인이 필요한 기능입니다.")
-        if (code === "NT") alert("삭제 된 할일입니다.")
-        if (code !== "SU") return
+        if (code === ResponseCode.DATABASE_ERROR) alert("데이터베이스 오류입니다.")
+        if (code === ResponseCode.VALIDATION_FAILED || code === ResponseCode.NOT_EXISTED_USER) alert("로그인이 필요한 기능입니다.")
+        if (code === ResponseCode.NOT_EXISTED_TODO) alert("삭제 된 할일입니다.")
+        if (code !== ResponseCode.SUCCESS) return
 
         alert("할일이 수정 되었습니다.")
         onSave()
@@ -105,28 +78,13 @@ const TodoModal: React.FC<TodoModalProps> = ({ isOpen, onSave, onClose, initialD
     }
 
     const onUpdateButtonHandler = () => {
-        if (!formData.title.trim()) {
-            setError("제목을 입력해주세요")
-            return
-        }
-
+        if (!formData.title.trim()) { setError("제목을 입력해주세요"); return }
         setIsSaving(true)
         const accessToken = cookies.accessToken
-        if (!accessToken) {
-            alert("로그인이 필요한 기능입니다.")
-            onClose()
-            return
-        }
-        if (!initialData) {
-            alert("이미 삭제된 일정입니다.")
-            return
-        } else {
-            const requestBody: UpdateTodoRequestDto = {
-                title: formData.title,
-                content: formData.content,
-            }
-            updateTodoRequest(initialData.id, requestBody, accessToken).then(updateTodoResponse)
-        }
+        if (!accessToken) { alert("로그인이 필요한 기능입니다."); onClose(); return }
+        if (!initialData) { alert("이미 삭제된 일정입니다."); return }
+        const requestBody: UpdateTodoRequestDto = { title: formData.title, content: formData.content }
+        updateTodoRequest(initialData.id, requestBody, accessToken).then(updateTodoResponse)
     }
 
     if (!isOpen) return null
@@ -134,7 +92,8 @@ const TodoModal: React.FC<TodoModalProps> = ({ isOpen, onSave, onClose, initialD
     return (
         <AnimatePresence>
             {isOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                    {/* 오버레이 클릭 닫기 */}
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -143,85 +102,85 @@ const TodoModal: React.FC<TodoModalProps> = ({ isOpen, onSave, onClose, initialD
                         className="absolute inset-0"
                     />
 
+                    {/* 모달 */}
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                        initial={{ opacity: 0, scale: 0.95, y: 16 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                        exit={{ opacity: 0, scale: 0.95, y: 16 }}
                         transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                        className="relative w-full max-w-md bg-white rounded-xl shadow-xl overflow-hidden"
+                        className="relative w-full max-w-md bg-[#13131a] border border-white/[0.08] rounded-2xl p-6 shadow-[0_8px_48px_rgba(0,0,0,0.6)] overflow-hidden"
                     >
-                        <div className="p-5 border-b border-slate-200 flex justify-between items-center">
-                            <h2 className="text-xl font-semibold text-slate-900">{initialData ? "할일 수정하기" : "새로운 할일"}</h2>
+                        {/* 헤더 */}
+                        <div className="flex justify-between items-center mb-5">
+                            <h2 className="text-base font-semibold text-slate-100">
+                                {initialData ? "할일 수정하기" : "새 할일 추가"}
+                            </h2>
                             <button
                                 onClick={onClose}
-                                className="h-8 w-8 rounded-full flex items-center justify-center text-slate-500 hover:bg-slate-100 transition-colors"
+                                className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-500 hover:text-slate-300 hover:bg-white/[0.06] transition-all"
                             >
-                                <X size={18} />
+                                <X size={16} />
                             </button>
                         </div>
 
-                        <div className="p-5">
-                            <div className="space-y-4">
-                                <div className="space-y-2">
-                                    <label htmlFor="title" className="block text-sm font-medium text-slate-700">
-                                        제목
-                                    </label>
-                                    <input
-                                        id="title"
-                                        type="text"
-                                        name="title"
-                                        value={formData.title}
-                                        onChange={onChangeHandler}
-                                        placeholder="할일 제목을 입력하세요"
-                                        className={`border ${error ? "border-red-500" : "border-slate-300"} p-3 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 transition-colors`}
-                                    />
-                                    {error && <p className="text-sm text-red-500">{error}</p>}
-                                </div>
+                        {/* 폼 */}
+                        <div className="space-y-4">
+                            {/* 제목 */}
+                            <div className="space-y-1.5">
+                                <label htmlFor="title" className="block text-xs font-medium text-slate-400">
+                                    제목
+                                </label>
+                                <input
+                                    id="title"
+                                    type="text"
+                                    name="title"
+                                    value={formData.title}
+                                    onChange={onChangeHandler}
+                                    placeholder="할일 제목을 입력하세요"
+                                    className={`w-full bg-white/[0.04] border rounded-xl px-3 py-2.5 text-sm text-slate-100 placeholder-slate-600 outline-none transition-all focus:ring-2 focus:ring-indigo-500/10 ${
+                                        error
+                                            ? "border-red-500/50 focus:border-red-500/50"
+                                            : "border-white/[0.08] focus:border-indigo-500/50"
+                                    }`}
+                                />
+                                {error && <p className="text-xs text-red-400">{error}</p>}
+                            </div>
 
-                                <div className="space-y-2">
-                                    <label htmlFor="content" className="block text-sm font-medium text-slate-700">
-                                        내용
-                                    </label>
-                                    <textarea
-                                        id="content"
-                                        name="content"
-                                        value={formData.content}
-                                        onChange={onChangeHandler}
-                                        placeholder="상세 내용을 입력하세요"
-                                        className="border border-slate-300 p-3 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 transition-colors min-h-[120px] resize-none"
-                                    ></textarea>
-                                </div>
+                            {/* 내용 */}
+                            <div className="space-y-1.5">
+                                <label htmlFor="content" className="block text-xs font-medium text-slate-400">
+                                    내용 <span className="text-slate-600">(선택)</span>
+                                </label>
+                                <textarea
+                                    id="content"
+                                    name="content"
+                                    value={formData.content}
+                                    onChange={onChangeHandler}
+                                    placeholder="상세 내용을 입력하세요"
+                                    className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2.5 text-sm text-slate-100 placeholder-slate-600 outline-none transition-all focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/10 resize-none h-32"
+                                />
                             </div>
                         </div>
 
-                        <div className="p-5 border-t border-slate-200 flex justify-end gap-3">
+                        {/* 버튼 */}
+                        <div className="flex gap-2 mt-6">
                             <button
                                 onClick={onClose}
-                                className="bg-slate-200 text-slate-700 py-2 px-4 rounded-md hover:bg-slate-300 transition-colors font-medium"
+                                className="flex-1 bg-white/[0.06] hover:bg-white/[0.10] text-slate-300 rounded-xl px-4 py-2.5 text-sm font-medium transition-all"
                             >
                                 취소
                             </button>
                             <button
                                 onClick={initialData ? onUpdateButtonHandler : onSubmitButtonHandler}
                                 disabled={isSaving}
-                                className="bg-gradient-to-r from-violet-500 to-indigo-500 hover:from-violet-600 hover:to-indigo-600 text-white py-2 px-4 rounded-md transition-colors font-medium disabled:opacity-70 flex items-center"
+                                className="flex-1 bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-400 hover:to-violet-500 text-white rounded-xl px-4 py-2.5 text-sm font-medium transition-all disabled:opacity-60 flex items-center justify-center gap-2"
                             >
                                 {isSaving ? (
                                     <>
-                                        <motion.div
-                                            animate={{ rotate: 360 }}
-                                            transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
-                                            className="mr-2"
-                                        >
-                                            <Loader2 size={16} />
-                                        </motion.div>
+                                        <Loader2 size={14} className="animate-spin" />
                                         {initialData ? "수정 중..." : "추가 중..."}
                                     </>
-                                ) : initialData ? (
-                                    "수정"
-                                ) : (
-                                    "추가"
-                                )}
+                                ) : initialData ? "수정하기" : "추가하기"}
                             </button>
                         </div>
                     </motion.div>

@@ -1,15 +1,15 @@
-import {FindIdRequestDto, SignInRequestDto} from './request/auth';
+import { FindIdRequestDto, SignInRequestDto, SignUpRequestDto } from './request/auth';
 import axios from 'axios';
-import {FindIdResponseDto, SignInResponseDto, SignUpResponseDto} from './response/auth';
-import {GetTodayScheduleIndexResponseDto, GetWeeklyScheduleIndexResponseDto, ResponseDto} from './response';
-import {PostScheduleRequestDto, UpdateScheduleRequestDto} from "./request/schedule";
+import { FindIdResponseDto, SignInResponseDto, SignUpResponseDto } from './response/auth';
+import { GetTodayScheduleIndexResponseDto, GetWeeklyScheduleIndexResponseDto, ResponseDto } from './response';
+import { PostScheduleRequestDto, UpdateScheduleRequestDto } from "./request/schedule";
 import {
     DeleteScheduleResponseDto,
     GetScheduleResponseDto,
     PostScheduleResponseDto,
     UpdateScheduleResponseDto
 } from "./response/schedule";
-import {PostTodoRequestDto, UpdateStateTodoRequestDto, UpdateTodoRequestDto} from "./request/todo";
+import { PostTodoRequestDto, UpdateStateTodoRequestDto, UpdateTodoRequestDto } from "./request/todo";
 import {
     DeleteTodoResponseDto,
     GetTodoResponseDto,
@@ -17,242 +17,156 @@ import {
     UpdateStateTodoResponseDto,
     UpdateTodoResponseDto
 } from "./response/todo";
-import {FindPasswordRequestDto, VerifiedNumberRequestDto} from "./request/mail";
-import {FindPasswordResponseDto, VerifiedNumberResponseDto} from "./response/mail";
+import { FindPasswordRequestDto, VerifiedNumberRequestDto } from "./request/mail";
+import { FindPasswordResponseDto, VerifiedNumberResponseDto } from "./response/mail";
 
 const DOMAIN = import.meta.env.VITE_API_URL;
 
-const API_DOMAIN = `${DOMAIN}/api`;
+const API_DOMAIN = `${DOMAIN}/api/v2`;
 
-const WHETHER_API_KEY = import.meta.env.VITE_WEATHER_API_KEY;
+const WEATHER_API_KEY = import.meta.env.VITE_WEATHER_API_KEY;
+
+// axios 인스턴스: 공통 baseURL 설정
+const apiClient = axios.create({
+    baseURL: API_DOMAIN,
+});
 
 const authorization = (accessToken: string) => {
-    return { headers: { Authorization: `Bearer ${accessToken}` } }
+    return { headers: { Authorization: `Bearer ${accessToken}` } };
 };
 
-const SIGN_IN_URL = () => `${API_DOMAIN}/auth/sign-in`;
-
-export const signInRequest = async (requestBody: SignInRequestDto) =>{
-    const result = await axios.post(SIGN_IN_URL(), requestBody)
-        .then(response=>{
-            const responseBody: SignInResponseDto = response.data;
-            return responseBody;
-        })
-        .catch(error => {
-            const responseBody: ResponseDto = error.response.data;
-            return responseBody;
-        })
-    return result;
-}
-
-const SIGN_UP_URL = () => `${API_DOMAIN}/auth/sign-up`;
-
-export const signUpRequest = async (requestBody: SignInRequestDto) => {
-    const result = await axios.post(SIGN_UP_URL(), requestBody)
-        .then(response => {
-            const responseBody: SignUpResponseDto = response.data;
-            return responseBody;
-        }).catch(error => {
-            const responseBody: ResponseDto = error.response.data;
-            return responseBody;
-        })
-    return result;
-}
-
-const FIND_ID_URL = () => `${API_DOMAIN}/auth/find-id`;
-
-export const findIdRequest = async (requestBody: FindIdRequestDto) => {
-    const result = await axios.post(FIND_ID_URL(), requestBody)
-        .then(response =>{
-            const responseBody: FindIdResponseDto = response.data;
-            return responseBody;
-        }).catch(error => {
-            const responseBody: ResponseDto = error.response.data;
-            return responseBody;
-        })
-    return result;
-}
-
-const FIND_PASSWORD_URL = () => `${API_DOMAIN}/mail/send`;
-
-export const findPasswordRequest = async (requestBody: FindPasswordRequestDto) => {
-    const result = await axios.post(FIND_PASSWORD_URL(), requestBody)
-        .then(response => {
-            const responseBody: FindPasswordResponseDto = response.data;
-            return responseBody;
-        }).catch(error => {
-            const responseBody: ResponseDto = error.response.data;
-            return responseBody;
-        })
-    return result;
-}
-
-const VERIFIED_NUMBER_URL = () => `${API_DOMAIN}/mail/verified`;
-
-export const verifiedNumberRequest = async (requestBody: VerifiedNumberRequestDto) => {
-    const result = await axios.post(VERIFIED_NUMBER_URL(), requestBody)
-        .then(response => {
-            const responseBody: VerifiedNumberResponseDto = response.data;
-            return responseBody;
-        }).catch(error => {
-            const responseBody: ResponseDto = error.response.data;
-            return responseBody;
-        })
-    return result;
-}
-
-const SCHEDULE_URL = () =>`${API_DOMAIN}/schedule`;
-
-export const postScheduleRequest = async (requestBody: PostScheduleRequestDto, accessToken:string) => {
-    const result = await axios.post(SCHEDULE_URL(), requestBody, authorization(accessToken))
-        .then(response => {
-            const responseBody: PostScheduleResponseDto = response.data;
-            return responseBody;
-        }).catch(error => {
-            const responseBody: ResponseDto = error.response.data;
-            return responseBody;
-        })
-    return result;
-}
-
-export const getScheduleRequest = async (accessToken:string) => {
-    const result = await axios.get(SCHEDULE_URL(), authorization(accessToken))
-        .then(response => {
-            const responseBody: GetScheduleResponseDto = response.data;
-            return responseBody;
-        }).catch(error => {
-            const responseBody: ResponseDto = error.response.data;
-            return responseBody;
-        })
-    return result;
-}
-
-const SCHEDULE_ID_URL = (id) =>`${API_DOMAIN}/schedule/${id}`;
-
-export const deleteScheduleRequest = async (id: number, accessToken: string)=>{
-    const result = await axios.delete(SCHEDULE_ID_URL(id), authorization(accessToken))
-        .then(response =>{
-            const responseBody: DeleteScheduleResponseDto = response.data;
-            return responseBody
-        }).catch(error =>{
-            const responseBody: ResponseDto = error.response.data;
-            return responseBody;
-        })
-    return result;
-}
-
-export const updateScheduleRequest = async (id: number, requestBody: UpdateScheduleRequestDto, accessToken: string) =>{
-    const result = await axios.put(SCHEDULE_ID_URL(id), requestBody, authorization(accessToken))
-        .then(response =>{
-            const responseBody: UpdateScheduleResponseDto = response.data;
-            return responseBody
-        }).catch(error =>{
-            const responseBody: ResponseDto = error.response.data;
-            return responseBody;
-        })
-    return result;
-}
-const TODAY_SCHEDULE_URL = (today) =>`${API_DOMAIN}/schedule/today?today=${today}`;
-
-export const getTodayScheduleRequest = async (today:string, accessToken:string) => {
-    const result = await axios.get(TODAY_SCHEDULE_URL(today), authorization(accessToken))
-        .then(response => {
-            const responseBody: GetTodayScheduleIndexResponseDto = response.data;
-            return responseBody;
-        }).catch(error => {
-            const responseBody: ResponseDto = error.response.data;
-            return responseBody;
-        })
-    return result;
-}
-const WEEKLY_SCHEDULE_URL = (start, end) =>`${API_DOMAIN}/schedule/weekly?start=${start}&end=${end}`;
-export const getWeeklyScheduleRequest = async (start: string, end: string, accessToken:string) => {
-    const result = await axios.get(WEEKLY_SCHEDULE_URL(start, end), authorization(accessToken))
-        .then(response => {
-            const responseBody: GetWeeklyScheduleIndexResponseDto = response.data;
-            return responseBody;
-        }).catch(error => {
-            const responseBody: ResponseDto = error.response.data;
-            return responseBody;
-        })
-    return result;
-}
-
-const GET_WEATHER_URL = () =>`https://api.openweathermap.org/data/2.5/weather?q=Seoul&appid=${WHETHER_API_KEY}&units=metric&lang=kr`
-
-export const getWeatherRequest = async ()=>{
+// 공통 API 호출 래퍼: 성공/실패 응답을 일관되게 처리
+async function apiCall<T>(fn: () => Promise<T>): Promise<T | ResponseDto> {
     try {
-        const response = await axios.get(GET_WEATHER_URL());
-        return response.data; // ✅ JSON 데이터만 반환
+        return await fn();
     } catch (error) {
-        console.error("날씨 정보를 불러오지 못했습니다.", error);
-        return null; // 에러 발생 시 null 반환
+        if (axios.isAxiosError(error) && error.response) {
+            return error.response.data as ResponseDto;
+        }
+        throw error;
     }
 }
 
-const TODO_URL = () => `${API_DOMAIN}/todo`;
+export const signInRequest = async (requestBody: SignInRequestDto): Promise<SignInResponseDto | ResponseDto> => {
+    return apiCall(async () => {
+        const response = await apiClient.post('/auth/sign-in', requestBody);
+        return response.data as SignInResponseDto;
+    });
+};
 
-export const postTodoRequest = async(requestBody: PostTodoRequestDto, accessToken: string) =>{
-    const result = await axios.post(TODO_URL(), requestBody, authorization(accessToken))
-        .then(response => {
-            const responseBody: PostTodoResponseDto = response.data;
-            return responseBody;
-        }).catch(error => {
-            const responseBody: ResponseDto = error.response.data;
-            return responseBody;
-        })
-    return result;
-}
+export const signUpRequest = async (requestBody: SignUpRequestDto): Promise<SignUpResponseDto | ResponseDto> => {
+    return apiCall(async () => {
+        const response = await apiClient.post('/auth/sign-up', requestBody);
+        return response.data as SignUpResponseDto;
+    });
+};
 
-export const getTodoRequest = async (accessToken: string) =>{
-    const result = await axios.get(TODO_URL(), authorization(accessToken))
-        .then(response => {
-            const responseBody: GetTodoResponseDto = response.data;
-            return responseBody;
-        }).catch(error => {
-            const responseBody: ResponseDto = error.response.data;
-            return responseBody;
-        })
-    return result;
-}
+export const findIdRequest = async (requestBody: FindIdRequestDto): Promise<FindIdResponseDto | ResponseDto> => {
+    return apiCall(async () => {
+        const response = await apiClient.post('/auth/find-id', requestBody);
+        return response.data as FindIdResponseDto;
+    });
+};
 
-const TODO_UPDATE_STATE_URL = (id) => `${API_DOMAIN}/todo/toggle/${id}`;
-export const updateStateTodoRequest = async (id: number, requestBody: UpdateStateTodoRequestDto, accessToken: string)=>{
-    const result = await axios.put(TODO_UPDATE_STATE_URL(id), requestBody, authorization(accessToken))
-        .then(response =>{
-            const responseBody: UpdateStateTodoResponseDto = response.data;
-            return responseBody;
-        }).catch(error=>{
-            const responseBody: ResponseDto = error.response.data;
-            return responseBody;
-        })
-    return result;
-}
+export const findPasswordRequest = async (requestBody: FindPasswordRequestDto): Promise<FindPasswordResponseDto | ResponseDto> => {
+    return apiCall(async () => {
+        const response = await apiClient.post('/mail/send', requestBody);
+        return response.data as FindPasswordResponseDto;
+    });
+};
 
-const TODO_UPDATE_URL = (id) => `${API_DOMAIN}/todo/${id}`;
+export const verifiedNumberRequest = async (requestBody: VerifiedNumberRequestDto): Promise<VerifiedNumberResponseDto | ResponseDto> => {
+    return apiCall(async () => {
+        const response = await apiClient.post('/mail/verified', requestBody);
+        return response.data as VerifiedNumberResponseDto;
+    });
+};
 
-export const updateTodoRequest = async (id: number, requestBody: UpdateTodoRequestDto, accessToken: string)=>{
-    const result = await axios.put(TODO_UPDATE_URL(id), requestBody, authorization(accessToken))
-        .then(response =>{
-            const responseBody: UpdateTodoResponseDto = response.data;
-            return responseBody;
-        }).catch(error=>{
-            const responseBody: ResponseDto = error.response.data;
-            return responseBody;
-        })
-    return result;
-}
+export const postScheduleRequest = async (requestBody: PostScheduleRequestDto, accessToken: string): Promise<PostScheduleResponseDto | ResponseDto> => {
+    return apiCall(async () => {
+        const response = await apiClient.post('/schedule', requestBody, authorization(accessToken));
+        return response.data as PostScheduleResponseDto;
+    });
+};
 
-const TODO_DELETE_URL = (id) => `${API_DOMAIN}/todo/${id}`;
+export const getScheduleRequest = async (accessToken: string): Promise<GetScheduleResponseDto | ResponseDto> => {
+    return apiCall(async () => {
+        const response = await apiClient.get('/schedule', authorization(accessToken));
+        return response.data as GetScheduleResponseDto;
+    });
+};
 
-export const deleteTodoRequest = async (id: number, accessToken: string) =>{
-    const result = await axios.delete(TODO_DELETE_URL(id), authorization(accessToken))
-        .then(response =>{
-            const responseBody: DeleteTodoResponseDto = response.data;
-            return responseBody;
-        }).catch(error=>{
-            const responseBody: ResponseDto = error.response.data;
-            return responseBody;
-        })
-    return result;
-}
+export const deleteScheduleRequest = async (id: number, accessToken: string): Promise<DeleteScheduleResponseDto | ResponseDto> => {
+    return apiCall(async () => {
+        const response = await apiClient.delete(`/schedule/${id}`, authorization(accessToken));
+        return response.data as DeleteScheduleResponseDto;
+    });
+};
+
+export const updateScheduleRequest = async (id: number, requestBody: UpdateScheduleRequestDto, accessToken: string): Promise<UpdateScheduleResponseDto | ResponseDto> => {
+    return apiCall(async () => {
+        const response = await apiClient.put(`/schedule/${id}`, requestBody, authorization(accessToken));
+        return response.data as UpdateScheduleResponseDto;
+    });
+};
+
+export const getTodayScheduleRequest = async (today: string, accessToken: string): Promise<GetTodayScheduleIndexResponseDto | ResponseDto> => {
+    return apiCall(async () => {
+        const response = await apiClient.get(`/schedule/today?today=${today}`, authorization(accessToken));
+        return response.data as GetTodayScheduleIndexResponseDto;
+    });
+};
+
+export const getWeeklyScheduleRequest = async (start: string, end: string, accessToken: string): Promise<GetWeeklyScheduleIndexResponseDto | ResponseDto> => {
+    return apiCall(async () => {
+        const response = await apiClient.get(`/schedule/weekly?start=${start}&end=${end}`, authorization(accessToken));
+        return response.data as GetWeeklyScheduleIndexResponseDto;
+    });
+};
+
+export const getWeatherRequest = async () => {
+    try {
+        const response = await axios.get(
+            `https://api.openweathermap.org/data/2.5/weather?q=Seoul&appid=${WEATHER_API_KEY}&units=metric&lang=kr`
+        );
+        return response.data;
+    } catch (error) {
+        console.error("날씨 정보를 불러오지 못했습니다.", error);
+        return null;
+    }
+};
+
+export const postTodoRequest = async (requestBody: PostTodoRequestDto, accessToken: string): Promise<PostTodoResponseDto | ResponseDto> => {
+    return apiCall(async () => {
+        const response = await apiClient.post('/todo', requestBody, authorization(accessToken));
+        return response.data as PostTodoResponseDto;
+    });
+};
+
+export const getTodoRequest = async (accessToken: string): Promise<GetTodoResponseDto | ResponseDto> => {
+    return apiCall(async () => {
+        const response = await apiClient.get('/todo', authorization(accessToken));
+        return response.data as GetTodoResponseDto;
+    });
+};
+
+export const updateStateTodoRequest = async (id: number, requestBody: UpdateStateTodoRequestDto, accessToken: string): Promise<UpdateStateTodoResponseDto | ResponseDto> => {
+    return apiCall(async () => {
+        const response = await apiClient.put(`/todo/toggle/${id}`, requestBody, authorization(accessToken));
+        return response.data as UpdateStateTodoResponseDto;
+    });
+};
+
+export const updateTodoRequest = async (id: number, requestBody: UpdateTodoRequestDto, accessToken: string): Promise<UpdateTodoResponseDto | ResponseDto> => {
+    return apiCall(async () => {
+        const response = await apiClient.put(`/todo/${id}`, requestBody, authorization(accessToken));
+        return response.data as UpdateTodoResponseDto;
+    });
+};
+
+export const deleteTodoRequest = async (id: number, accessToken: string): Promise<DeleteTodoResponseDto | ResponseDto> => {
+    return apiCall(async () => {
+        const response = await apiClient.delete(`/todo/${id}`, authorization(accessToken));
+        return response.data as DeleteTodoResponseDto;
+    });
+};
