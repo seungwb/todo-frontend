@@ -256,3 +256,146 @@
 - `src/constants/index.ts` — 세미콜론 일관성 통일
 - `vite.config.ts` — CRA 잔재 주석 제거
 - `package.json` — 미사용 및 잘못된 의존성 3개 제거
+
+---
+
+# 전체 디자인 개선 (2026-03-28)
+
+> 분석 일자: 2026-03-28
+> 대상: todo-frontend 전체 UI/UX
+> 방향: Modern Dark SaaS (Linear / Vercel 스타일)
+
+## 디자인 시스템 변경
+
+### 색상 팔레트
+- **배경**: `#0d0d12` → `#09090f` (딥 다크, 블루 틴트 강화)
+- **카드 배경**: `#13131a` → `#111118`
+- **카드 hover**: `#1c1c28` → `#18181f`
+- **카드 테두리**: `rgba(255,255,255,0.06)` → `rgba(255,255,255,0.07)`
+- **Primary 버튼**: `bg-gradient-to-r from-indigo-500 to-violet-600` → `bg-indigo-600` (solid) + 글로우 shadow
+
+### 타이포그래피
+- 라벨 스타일: `text-sm text-slate-400` → `text-[11px] font-medium text-slate-500 uppercase tracking-wider`
+- 타이틀 스타일: `tracking-tight` 추가로 가독성 향상
+
+---
+
+## 변경 파일별 상세
+
+### `src/index.css`
+- Google Fonts Inter에 `ital` 및 `opsz` 파라미터 추가
+- CSS 커스텀 프로퍼티(`--bg-base`, `--bg-card`, `--border` 등) 추가
+- 스크롤바 너비 `6px` → `4px`, 배경 투명으로 변경
+- `::selection` 스타일 추가 (인디고 계열 선택 색상)
+- `input[type="datetime-local"] { color-scheme: dark }` 추가
+- FullCalendar 폰트 크기 및 letter-spacing 개선
+
+### `src/tailwind.config.js`
+- `surface` 토큰: `DEFAULT`/`secondary` → `DEFAULT`/`2`/`3` 세 단계로 세분화
+- `primary.muted` 토큰 추가 (`rgba(99,102,241,0.12)`)
+- `boxShadow` 커스텀 토큰 추가: `glow-sm`, `glow`, `glow-lg`, `card`, `modal`
+- 불필요한 HSL 기반 `destructive`, `muted`, `popover`, `card` 토큰 제거
+- `pulse-glow` keyframe/animation 추가
+
+### `src/layouts/Header/index.tsx`
+- 로고: 텍스트 그라디언트 → `CheckSquare` 아이콘 + 인디고 배경 뱃지로 변경
+- 로그인/로그아웃 버튼: `LogIn` / `LogOut` 아이콘 추가, 로그인 상태 별 스타일 분기
+- active nav 표시: 하단 dot → 하단 1px 라인 (`h-px`)으로 변경
+- 헤더 높이: `h-16` → `h-14` (더 슬림하게)
+- 메뉴 아이템 간격: `gap-1` → `gap-0.5`
+
+### `src/views/index.tsx` (대시보드)
+- 배경에 Ambient glow 효과(고정 배치 블러 원) 추가
+- 인사 문구: 시간대별 동적 멘트(`getGreeting()`) 추가
+- **통계 row 신규 추가**: 전체 할일 / 남은 할일 / 완료율 3개 카드
+- **그리드 레이아웃 변경**: `grid-cols-2` → `grid-cols-3` (3열 bento 그리드)
+- 날씨 카드: 1/3 너비, 그라디언트 배경 + ambient 원, 습도(`humidity`) 표시 추가
+- 오늘의 일정: 2/3 너비, 바로가기 `ArrowRight` 아이콘 추가
+- 할일 목록 카드: 진행률 바 추가, 5개 초과 시 "N개 더 보기" 링크
+- 이번 주 일정: 1/3 너비 사이드 카드, 최대 4건 표시
+
+### `src/views/Todo/index.tsx`
+- **필터 탭 신규 추가**: 전체 / 미완료 / 완료 세그먼트 컨트롤
+- **진행률 바 신규 추가**: 완료 비율 표시 (Framer Motion 애니메이션)
+- 헤더: "X/Y개 완료" 부제목 추가
+- 버튼: 그라디언트 → solid 인디고 + 글로우 shadow
+- 빈 상태: 필터 상태별 메시지 분기 처리
+
+### `src/views/Schedule/index.tsx`
+- 헤더: 아이콘 뱃지(`CalendarDays`) + 부제목 추가
+- 버튼: solid 인디고 + 글로우 shadow
+- 필터: `border` 버튼 나열 → `bg-[#111118]` 컨테이너 내 pill 탭으로 변경
+- 필터 레이블: "이전/오늘/차후" → "지난/오늘/예정" (자연스러운 표현)
+- 빈 상태: 아이콘 뱃지 스타일로 개선
+
+### `src/views/Notice/index.tsx`
+- 헤더: `Bell` 아이콘에 amber 계열 배경 뱃지 적용
+- 테이블 헤더: 배경 카드 제거 → 인라인 레이블로 변경 (더 미니멀)
+- 항목: hover 배경 `#1c1c28` → `#18181f`
+
+### `src/views/Authentication/index.tsx`
+- 카드 외부에 `-inset-px` 그라디언트 레이어 추가 (subtle border glow)
+- 카드 상단 중앙 그라디언트 라인 추가 (`via-indigo-500/50`)
+- 배경 광원 3개 → 더 자연스러운 배치로 조정
+- **FindId/FindPassword/SignUp 카드**: 타이틀 아이콘 뱃지 제거 → `ArrowLeft` 뒤로가기 버튼 + 인라인 제목으로 변경
+- SignIn 카드: 아이콘 크기/색상 정제
+- 링크 버튼: `<span onClick>` → `<button>` 태그로 의미론적 개선
+
+### `src/components/InputBox/index.tsx`
+- 라벨: `text-sm text-slate-400` → `text-[11px] uppercase tracking-wider`
+- **Validation 개선**: `touched` 상태 추가 — 값 입력 후 blur 또는 재입력 시에만 에러 표시 (UX 개선)
+- 패스워드 토글 아이콘 크기: `18px` → `16px`
+
+### `src/components/TodoListItem/index.tsx`
+- 카드 테두리: 기본 `border-white/[0.06]` → expanded 시 `border-white/[0.12]` + `shadow` 적용
+- 체크박스 완료 상태: 글로우 shadow 추가 (`shadow-[0_0_8px_rgba(99,102,241,0.4)]`)
+- 날짜 텍스트: `text-xs text-slate-600` → `text-[11px] text-slate-700`
+- 액션 버튼: 배경 있는 항상 표시 → `border` 스타일 + hover 색상 강조로 변경
+- 수정 버튼: 완료 상태가 아닐 때만 표시 (기존: 완료 상태일 때만 표시) → 반전 수정
+
+### `src/components/TodoModal/index.tsx`
+- **상단 컬러 바 추가**: `h-px bg-gradient-to-r from-indigo-500/60 via-violet-500/60 to-transparent`
+- 헤더: 텍스트만 → `CheckSquare` 아이콘 뱃지 + 제목
+- 오버레이: `opacity` → `bg-black/70 backdrop-blur-sm`
+- 입력 필드: `autoFocus` 추가, Enter 키 제출 처리 추가
+- 제목 라벨에 필수 표시(`*`) 추가
+- 버튼: 그라디언트 → solid 인디고
+
+### `src/components/ScheduleListItem/index.tsx`
+- **상단 컬러 바 추가**: `h-px bg-gradient-to-r from-indigo-500/50 via-violet-500/30 to-transparent`
+- 액션 버튼: 항상 표시 → `opacity-0 group-hover:opacity-100` (hover 시에만 표시)
+- 날짜: 시작/종료 동일일인 경우 단일 날짜로 표시 (`isSameDay` 처리)
+- `whileHover`: `y: -2` → `y: -1` (더 절제된 인터랙션)
+
+### `src/components/ScheduleModal/index.tsx`
+- **상단 컬러 바 추가**: `h-px bg-gradient-to-r from-violet-500/60 via-indigo-500/60 to-transparent`
+- 헤더: 텍스트만 → `CalendarDays` 아이콘 뱃지 + 제목
+- 입력 필드: `autoFocus` 추가
+- 라벨 스타일: uppercase tracking-wider 통일, 선택 필드에 `(선택)` 명시
+
+---
+
+## 요약
+
+| 구분 | 건수 |
+|------|------|
+| 전역 스타일 (CSS/Config) | 2 |
+| 레이아웃 | 1 |
+| 페이지 뷰 | 5 |
+| 컴포넌트 | 5 |
+| **합계** | **13** |
+
+### 주요 변경 파일 목록 (스타일)
+- `src/index.css` — CSS 변수, 스크롤바, selection, FullCalendar 테마 개선
+- `src/tailwind.config.js` — surface/shadow/animation 토큰 재정의
+- `src/layouts/Header/index.tsx` — 아이콘 로고, 슬림 헤더, 인증 버튼 개선
+- `src/views/index.tsx` — Bento grid, 통계 row, 진행률 바, ambient glow
+- `src/views/Todo/index.tsx` — 필터 탭, 진행률 바
+- `src/views/Schedule/index.tsx` — pill 필터, 아이콘 헤더
+- `src/views/Notice/index.tsx` — 미니멀 테이블 헤더
+- `src/views/Authentication/index.tsx` — 글래스 카드, ArrowLeft 뒤로가기, 그라디언트 라인
+- `src/components/InputBox/index.tsx` — touched 기반 validation, uppercase 라벨
+- `src/components/TodoListItem/index.tsx` — 글로우 체크박스, 테두리 동적 강조
+- `src/components/TodoModal/index.tsx` — 상단 컬러 바, 아이콘 헤더, autoFocus
+- `src/components/ScheduleListItem/index.tsx` — hover-only 액션 버튼, 동일일 날짜 처리
+- `src/components/ScheduleModal/index.tsx` — 상단 컬러 바, 아이콘 헤더, autoFocus

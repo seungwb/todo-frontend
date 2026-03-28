@@ -3,7 +3,7 @@
 import type React from "react"
 import { useEffect, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { X, Calendar } from "lucide-react"
+import { X, CalendarDays } from "lucide-react"
 import { postScheduleRequest, updateScheduleRequest } from "../../apis"
 import type { PostScheduleRequestDto, UpdateScheduleRequestDto } from "../../apis/request/schedule"
 import { useCookies } from "react-cookie"
@@ -27,7 +27,7 @@ interface ScheduleModalProps {
 }
 
 const inputClass =
-    "w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-slate-100 placeholder-slate-600 focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/10 outline-none transition-all text-sm"
+    "w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-3.5 py-2.5 text-slate-100 placeholder-slate-700 focus:border-indigo-500/40 focus:ring-2 focus:ring-indigo-500/10 outline-none transition-all duration-200 text-sm"
 
 const ScheduleModal: React.FC<ScheduleModalProps> = ({ isOpen, onClose, onSave, selectedDate, initialData }) => {
     const [formData, setFormData] = useState({
@@ -66,10 +66,7 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({ isOpen, onClose, onSave, 
     }
 
     const scheduleResponse = (responseBody: PostScheduleResponseDto | UpdateScheduleResponseDto | ResponseDto | null) => {
-        if (!responseBody) {
-            alert("네트워크 이상입니다.")
-            return
-        }
+        if (!responseBody) { alert("네트워크 이상입니다."); return }
         const { code } = responseBody
         if (code === ResponseCode.DATABASE_ERROR) alert("데이터베이스 오류입니다.")
         if (code === ResponseCode.VALIDATION_FAILED || code === ResponseCode.NOT_EXISTED_USER) alert("로그인이 필요한 기능입니다.")
@@ -83,11 +80,7 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({ isOpen, onClose, onSave, 
 
     const onSubmitHandler = () => {
         const accessToken = cookies.accessToken
-        if (!accessToken) {
-            alert("로그인이 필요한 기능입니다.")
-            onClose()
-            return
-        }
+        if (!accessToken) { alert("로그인이 필요한 기능입니다."); onClose(); return }
 
         const requestBody: PostScheduleRequestDto | UpdateScheduleRequestDto = {
             title: formData.title,
@@ -113,95 +106,112 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({ isOpen, onClose, onSave, 
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 px-4"
+                    className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 px-4 pb-4 sm:pb-0"
                     onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
                 >
                     <motion.div
-                        initial={{ scale: 0.95, opacity: 0, y: 16 }}
+                        initial={{ scale: 0.96, opacity: 0, y: 20 }}
                         animate={{ scale: 1, opacity: 1, y: 0 }}
-                        exit={{ scale: 0.95, opacity: 0, y: 16 }}
-                        transition={{ duration: 0.2, ease: "easeOut" }}
-                        className="bg-[#13131a] border border-white/[0.08] rounded-2xl p-6 w-full max-w-md shadow-[0_8px_48px_rgba(0,0,0,0.6)]"
+                        exit={{ scale: 0.96, opacity: 0, y: 20 }}
+                        transition={{ type: "spring", damping: 30, stiffness: 400 }}
+                        className="bg-[#111118] border border-white/[0.09] rounded-2xl w-full max-w-md shadow-[0_8px_40px_rgba(0,0,0,0.7),0_0_0_1px_rgba(255,255,255,0.04)] overflow-hidden"
                     >
-                        {/* 헤더 */}
-                        <div className="flex justify-between items-center mb-6">
-                            <div className="flex items-center gap-2">
-                                <Calendar size={18} className="text-indigo-400" />
-                                <h2 className="text-lg font-semibold text-slate-100">
-                                    {initialData ? "일정 수정" : "새 일정 추가"}
-                                </h2>
-                            </div>
-                            <button
-                                onClick={onClose}
-                                className="p-1.5 rounded-lg text-slate-500 hover:text-slate-300 hover:bg-white/[0.06] transition-all"
-                            >
-                                <X size={18} />
-                            </button>
-                        </div>
+                        {/* 상단 컬러 바 */}
+                        <div className="h-px bg-gradient-to-r from-violet-500/60 via-indigo-500/60 to-transparent" />
 
-                        {/* 폼 */}
-                        <div className="space-y-3">
-                            <input
-                                type="text"
-                                name="title"
-                                placeholder="제목"
-                                className={inputClass}
-                                value={formData.title}
-                                onChange={onChangeHandler}
-                            />
-                            <textarea
-                                name="content"
-                                placeholder="내용"
-                                className={`${inputClass} h-28 resize-none`}
-                                value={formData.content}
-                                onChange={onChangeHandler}
-                            />
-                            <input
-                                type="text"
-                                name="location"
-                                placeholder="장소"
-                                className={inputClass}
-                                value={formData.location}
-                                onChange={onChangeHandler}
-                            />
-                            <div className="grid grid-cols-2 gap-3">
+                        <div className="p-5">
+                            {/* 헤더 */}
+                            <div className="flex items-center justify-between mb-5">
+                                <div className="flex items-center gap-2.5">
+                                    <div className="w-7 h-7 bg-violet-500/15 rounded-lg flex items-center justify-center">
+                                        <CalendarDays size={14} className="text-violet-400" />
+                                    </div>
+                                    <h2 className="text-sm font-semibold text-slate-100">
+                                        {initialData ? "일정 수정" : "새 일정 추가"}
+                                    </h2>
+                                </div>
+                                <button
+                                    onClick={onClose}
+                                    className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-600 hover:text-slate-300 hover:bg-white/[0.06] transition-all"
+                                >
+                                    <X size={15} />
+                                </button>
+                            </div>
+
+                            {/* 폼 */}
+                            <div className="space-y-3">
                                 <div>
-                                    <label className="block text-xs text-slate-500 mb-1.5 ml-1">시작일시</label>
+                                    <label className="block text-[11px] font-medium text-slate-500 mb-1.5 uppercase tracking-wider">제목</label>
                                     <input
-                                        type="datetime-local"
-                                        name="startDate"
+                                        type="text"
+                                        name="title"
+                                        placeholder="일정 제목을 입력하세요"
                                         className={inputClass}
-                                        value={formData.startDate}
+                                        value={formData.title}
+                                        onChange={onChangeHandler}
+                                        autoFocus
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-[11px] font-medium text-slate-500 mb-1.5 uppercase tracking-wider">내용 <span className="text-slate-700 normal-case">(선택)</span></label>
+                                    <textarea
+                                        name="content"
+                                        placeholder="일정 내용을 입력하세요"
+                                        className={`${inputClass} h-24 resize-none`}
+                                        value={formData.content}
                                         onChange={onChangeHandler}
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs text-slate-500 mb-1.5 ml-1">종료일시</label>
+                                    <label className="block text-[11px] font-medium text-slate-500 mb-1.5 uppercase tracking-wider">장소 <span className="text-slate-700 normal-case">(선택)</span></label>
                                     <input
-                                        type="datetime-local"
-                                        name="endDate"
+                                        type="text"
+                                        name="location"
+                                        placeholder="장소를 입력하세요"
                                         className={inputClass}
-                                        value={formData.endDate}
+                                        value={formData.location}
                                         onChange={onChangeHandler}
                                     />
                                 </div>
+                                <div className="grid grid-cols-2 gap-2.5">
+                                    <div>
+                                        <label className="block text-[11px] font-medium text-slate-500 mb-1.5 uppercase tracking-wider">시작</label>
+                                        <input
+                                            type="datetime-local"
+                                            name="startDate"
+                                            className={inputClass}
+                                            value={formData.startDate}
+                                            onChange={onChangeHandler}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[11px] font-medium text-slate-500 mb-1.5 uppercase tracking-wider">종료</label>
+                                        <input
+                                            type="datetime-local"
+                                            name="endDate"
+                                            className={inputClass}
+                                            value={formData.endDate}
+                                            onChange={onChangeHandler}
+                                        />
+                                    </div>
+                                </div>
                             </div>
-                        </div>
 
-                        {/* 버튼 */}
-                        <div className="flex gap-2 mt-6">
-                            <button
-                                onClick={onClose}
-                                className="flex-1 bg-white/[0.06] hover:bg-white/[0.10] text-slate-300 rounded-xl px-4 py-2.5 font-medium transition-all text-sm"
-                            >
-                                취소
-                            </button>
-                            <button
-                                onClick={onSubmitHandler}
-                                className="flex-1 bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-400 hover:to-violet-500 text-white rounded-xl px-4 py-2.5 font-medium transition-all text-sm"
-                            >
-                                {initialData ? "수정" : "추가"}
-                            </button>
+                            {/* 버튼 */}
+                            <div className="flex gap-2 mt-5">
+                                <button
+                                    onClick={onClose}
+                                    className="flex-1 bg-white/[0.04] hover:bg-white/[0.08] text-slate-400 hover:text-slate-200 border border-white/[0.07] rounded-xl px-4 py-2.5 font-medium transition-all duration-200 text-sm"
+                                >
+                                    취소
+                                </button>
+                                <button
+                                    onClick={onSubmitHandler}
+                                    className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl px-4 py-2.5 font-medium transition-all duration-200 text-sm shadow-[0_0_16px_rgba(99,102,241,0.25)]"
+                                >
+                                    {initialData ? "수정하기" : "추가하기"}
+                                </button>
+                            </div>
                         </div>
                     </motion.div>
                 </motion.div>
