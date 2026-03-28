@@ -1,5 +1,5 @@
 import { type MouseEvent, useState } from "react"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import { Edit, Trash2, Check, ChevronDown, Loader2 } from "lucide-react"
 import type { DeleteTodoResponseDto, UpdateStateTodoResponseDto } from "../../apis/response/todo"
 import type { ResponseDto } from "../../apis/response"
@@ -75,88 +75,109 @@ export default function TodoListItem({ todo, onSave }: TodoListItemProps) {
     }
 
     return (
-        <div className="bg-[#13131a] border border-white/[0.06] rounded-2xl hover:border-white/[0.10] hover:bg-[#1c1c28] transition-all overflow-hidden">
-            <div className="p-4" onClick={onToggleHandler}>
+        <div className={`group bg-[#111118] border rounded-2xl overflow-hidden transition-all duration-200 ${
+            isExpanded
+                ? "border-white/[0.12] shadow-[0_4px_20px_rgba(0,0,0,0.3)]"
+                : "border-white/[0.07] hover:border-white/[0.12]"
+        }`}>
+            <div
+                className="p-4 cursor-pointer"
+                onClick={onToggleHandler}
+            >
                 <div className="flex items-start gap-3">
                     {/* 커스텀 체크박스 */}
                     <div
-                        className={`flex-shrink-0 w-5 h-5 rounded-md border flex items-center justify-center mt-0.5 cursor-pointer transition-all ${
+                        className={`flex-shrink-0 w-5 h-5 rounded-md border flex items-center justify-center mt-0.5 cursor-pointer transition-all duration-200 ${
                             updateState
-                                ? "bg-gradient-to-br from-indigo-500 to-violet-600 border-transparent"
-                                : "border-white/[0.15] bg-transparent"
+                                ? "bg-gradient-to-br from-indigo-500 to-violet-600 border-transparent shadow-[0_0_8px_rgba(99,102,241,0.4)]"
+                                : "border-white/[0.15] bg-transparent hover:border-white/30"
                         }`}
                         onClick={(e) => { e.stopPropagation(); onToggleHandler(e) }}
                     >
-                        {updateState && <Check size={12} className="text-white" strokeWidth={2.5} />}
+                        {updateState && (
+                            <Check size={11} className="text-white" strokeWidth={3} />
+                        )}
                     </div>
 
                     {/* 내용 */}
                     <div className="flex-1 min-w-0">
                         <div
-                            className="flex items-center justify-between cursor-pointer gap-2"
+                            className="flex items-center justify-between gap-2"
                             onClick={(e) => { e.stopPropagation(); setIsExpanded(!isExpanded) }}
                         >
-                            <h3 className={`font-medium text-sm leading-snug transition-all ${
-                                updateState ? "text-slate-100" : "text-slate-600 line-through"
+                            <h3 className={`font-medium text-sm leading-snug transition-all duration-200 ${
+                                updateState
+                                    ? "text-slate-600 line-through"
+                                    : "text-slate-100"
                             }`}>
                                 {todo.title}
                             </h3>
-                            <ChevronDown
-                                size={15}
-                                className={`flex-shrink-0 text-slate-600 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
-                            />
+                            <div className="flex items-center gap-2 flex-shrink-0">
+                                {todo.content && (
+                                    <ChevronDown
+                                        size={14}
+                                        className={`text-slate-600 group-hover:text-slate-500 transition-all duration-200 ${isExpanded ? "rotate-180" : ""}`}
+                                    />
+                                )}
+                            </div>
                         </div>
-                        <p className="text-xs text-slate-600 mt-1">{formatDate(todo.regDate)}</p>
+                        <p className="text-[11px] text-slate-700 mt-1">{formatDate(todo.regDate)}</p>
 
                         {/* 확장 내용 */}
-                        {isExpanded && todo.content && (
-                            <motion.div
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: "auto" }}
-                                exit={{ opacity: 0, height: 0 }}
-                                transition={{ duration: 0.2 }}
-                                className="mt-3 pt-3 border-t border-white/[0.06] text-slate-400 text-sm leading-relaxed"
-                            >
-                                {todo.content}
-                            </motion.div>
-                        )}
+                        <AnimatePresence>
+                            {isExpanded && todo.content && (
+                                <motion.div
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: "auto" }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    transition={{ duration: 0.2, ease: "easeOut" }}
+                                    className="overflow-hidden"
+                                >
+                                    <p className="mt-3 pt-3 border-t border-white/[0.06] text-slate-400 text-sm leading-relaxed">
+                                        {todo.content}
+                                    </p>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </div>
                 </div>
             </div>
 
-            {/* 액션 버튼 (확장 시) */}
-            {isExpanded && (
-                <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.2 }}
-                >
-                    <div className="action-buttons flex justify-end gap-2 px-4 pb-4">
-                        {updateState && (
-                            <button
-                                onClick={(e) => { e.stopPropagation(); onUpdateButtonHandler(todo) }}
-                                className="bg-white/[0.06] hover:bg-white/[0.10] text-slate-300 hover:text-indigo-400 rounded-xl px-3 py-1.5 text-xs font-medium flex items-center gap-1.5 transition-all"
-                            >
-                                <Edit size={13} />
-                                수정
-                            </button>
-                        )}
-                        <button
-                            onClick={(e) => { e.stopPropagation(); onDeleteButtonHandler() }}
-                            disabled={isDeleting}
-                            className="bg-white/[0.06] hover:bg-red-500/10 text-slate-300 hover:text-red-400 rounded-xl px-3 py-1.5 text-xs font-medium flex items-center gap-1.5 transition-all disabled:opacity-50"
-                        >
-                            {isDeleting ? (
-                                <Loader2 size={13} className="animate-spin" />
-                            ) : (
-                                <Trash2 size={13} />
+            {/* 액션 버튼 */}
+            <AnimatePresence>
+                {isExpanded && (
+                    <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.2 }}
+                    >
+                        <div className="action-buttons flex justify-end gap-1.5 px-4 pb-3 pt-1 border-t border-white/[0.05]">
+                            {!updateState && (
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); onUpdateButtonHandler(todo) }}
+                                    className="flex items-center gap-1.5 bg-white/[0.04] hover:bg-indigo-500/10 text-slate-500 hover:text-indigo-400 border border-white/[0.06] hover:border-indigo-500/20 rounded-lg px-3 py-1.5 text-xs font-medium transition-all duration-200"
+                                >
+                                    <Edit size={12} />
+                                    수정
+                                </button>
                             )}
-                            삭제
-                        </button>
-                    </div>
-                </motion.div>
-            )}
+                            <button
+                                onClick={(e) => { e.stopPropagation(); onDeleteButtonHandler() }}
+                                disabled={isDeleting}
+                                className="flex items-center gap-1.5 bg-white/[0.04] hover:bg-red-500/10 text-slate-500 hover:text-red-400 border border-white/[0.06] hover:border-red-500/20 rounded-lg px-3 py-1.5 text-xs font-medium transition-all duration-200 disabled:opacity-50"
+                            >
+                                {isDeleting ? (
+                                    <Loader2 size={12} className="animate-spin" />
+                                ) : (
+                                    <Trash2 size={12} />
+                                )}
+                                삭제
+                            </button>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {isModalOpen && (
                 <div className="isolate isolation-auto fixed z-50">

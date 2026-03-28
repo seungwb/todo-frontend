@@ -57,59 +57,77 @@ export default function ScheduleListItem({ event, onSave }: ScheduleListItemProp
 
     const extProps = event.extendedProps as Record<string, unknown>
 
+    const startDate = new Date(event.start as Date)
+    const endDate = new Date(event.end as Date)
+    const isSameDay = startDate.toDateString() === endDate.toDateString()
+
     return (
         <>
             <motion.div
-                className="bg-[#13131a] border border-white/[0.06] rounded-2xl p-5 hover:border-white/[0.10] hover:bg-[#1c1c28] transition-all cursor-default"
-                whileHover={{ y: -2 }}
-                transition={{ duration: 0.18 }}
+                className="group bg-[#111118] border border-white/[0.07] rounded-2xl overflow-hidden hover:border-white/[0.13] hover:shadow-[0_4px_20px_rgba(0,0,0,0.3)] transition-all duration-200"
+                whileHover={{ y: -1 }}
+                transition={{ duration: 0.15 }}
             >
-                {/* 상단: 제목 + 액션 버튼 */}
-                <div className="flex justify-between items-start mb-3">
-                    <h3 className="text-slate-100 font-semibold text-base leading-snug flex-1 pr-2">{event.title}</h3>
-                    <div className="flex items-center gap-1 flex-shrink-0">
-                        <button
-                            onClick={() => onUpdateButtonHandler(event)}
-                            className="p-1.5 rounded-lg text-slate-500 hover:text-indigo-400 hover:bg-indigo-500/10 transition-all"
-                            aria-label="일정 수정"
-                        >
-                            <Edit2 size={15} />
-                        </button>
-                        <button
-                            onClick={onDeleteButtonHandler}
-                            className="p-1.5 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all"
-                            aria-label="일정 삭제"
-                        >
-                            <Trash2 size={15} />
-                        </button>
+                {/* 상단 컬러 바 */}
+                <div className="h-px bg-gradient-to-r from-indigo-500/50 via-violet-500/30 to-transparent" />
+
+                <div className="p-4">
+                    {/* 제목 + 액션 버튼 */}
+                    <div className="flex items-start justify-between mb-3">
+                        <h3 className="text-slate-100 font-semibold text-sm leading-snug flex-1 pr-2 group-hover:text-white transition-colors">
+                            {event.title}
+                        </h3>
+                        <div className="flex items-center gap-0.5 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                            <button
+                                onClick={() => onUpdateButtonHandler(event)}
+                                className="p-1.5 rounded-lg text-slate-600 hover:text-indigo-400 hover:bg-indigo-500/10 transition-all"
+                                aria-label="일정 수정"
+                            >
+                                <Edit2 size={13} />
+                            </button>
+                            <button
+                                onClick={onDeleteButtonHandler}
+                                className="p-1.5 rounded-lg text-slate-600 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                                aria-label="일정 삭제"
+                            >
+                                <Trash2 size={13} />
+                            </button>
+                        </div>
                     </div>
-                </div>
 
-                {/* 날짜 범위 */}
-                <div className="flex items-center gap-2 text-slate-400 text-sm mb-1.5">
-                    <Calendar size={14} className="flex-shrink-0 text-slate-600" />
-                    <span>
-                        {new Date(event.start as Date).toLocaleDateString("ko-KR")} — {new Date(event.end as Date).toLocaleDateString("ko-KR")}
-                    </span>
-                </div>
-
-                {/* 장소 */}
-                {extProps?.location && (
-                    <div className="flex items-center gap-2 text-slate-400 text-sm mb-1.5">
-                        <MapPin size={14} className="flex-shrink-0 text-slate-600" />
-                        <span>{extProps.location as string}</span>
+                    {/* 날짜 */}
+                    <div className="flex items-center gap-2 mb-2">
+                        <Calendar size={12} className="flex-shrink-0 text-slate-600" />
+                        <span className="text-slate-500 text-xs">
+                            {isSameDay
+                                ? startDate.toLocaleDateString("ko-KR")
+                                : `${startDate.toLocaleDateString("ko-KR")} — ${endDate.toLocaleDateString("ko-KR")}`
+                            }
+                        </span>
                     </div>
-                )}
 
-                {/* 내용 */}
-                {extProps?.content && (
-                    <p className="text-slate-500 text-sm mt-2 leading-relaxed line-clamp-2">{extProps.content as string}</p>
-                )}
+                    {/* 장소 */}
+                    {extProps?.location && (
+                        <div className="flex items-center gap-2 mb-2">
+                            <MapPin size={12} className="flex-shrink-0 text-slate-600" />
+                            <span className="text-slate-500 text-xs truncate">{extProps.location as string}</span>
+                        </div>
+                    )}
 
-                {/* 작성자 / 작성일 */}
-                <div className="mt-3 pt-3 border-t border-white/[0.06] flex items-center justify-between">
-                    <span className="text-xs text-slate-600">{extProps.name as string}</span>
-                    <span className="text-xs text-slate-600">{new Date(extProps.regDate as Date).toLocaleString("ko-KR")}</span>
+                    {/* 내용 */}
+                    {extProps?.content && (
+                        <p className="text-slate-600 text-xs mt-2.5 leading-relaxed line-clamp-2">
+                            {extProps.content as string}
+                        </p>
+                    )}
+
+                    {/* 하단 메타 */}
+                    <div className="mt-3.5 pt-3 border-t border-white/[0.05] flex items-center justify-between">
+                        <span className="text-[11px] text-slate-700 font-medium">{extProps.name as string}</span>
+                        <span className="text-[11px] text-slate-700">
+                            {new Date(extProps.regDate as Date).toLocaleDateString("ko-KR")}
+                        </span>
+                    </div>
                 </div>
             </motion.div>
             <ScheduleModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} initialData={updateData} onSave={onSave} />

@@ -13,6 +13,7 @@ import InputBox from "../../components/InputBox"
 import type { FindPasswordResponseDto, VerifiedNumberResponseDto } from "../../apis/response/mail"
 import type { FindPasswordRequestDto, VerifiedNumberRequestDto } from "../../apis/request/mail"
 import ResponseCode from "../../types/enum/response-code.enum"
+import { CheckSquare, ArrowLeft } from "lucide-react"
 
 type AuthView = "sign-in" | "sign-up" | "find-id" | "find-password"
 
@@ -49,28 +50,23 @@ function SignInCard({ setView }: SignInCardProps) {
 
     return (
         <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
+            exit={{ opacity: 0, y: -16 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
             className="w-full"
         >
-            {/* 로고 & 타이틀 */}
-            <div className="text-center mb-8">
-                <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 mb-4 shadow-lg shadow-indigo-500/25">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M9 11l3 3L22 4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
+            <div className="text-center mb-7">
+                <div className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 mb-4 shadow-[0_0_20px_rgba(99,102,241,0.4)]">
+                    <CheckSquare size={20} className="text-white" strokeWidth={2.5} />
                 </div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">
-                    Todo App
-                </h1>
-                <p className="text-slate-400 text-sm mt-1">다시 만나서 반가워요</p>
+                <h1 className="text-xl font-bold text-slate-100 tracking-tight">다시 만나서 반가워요</h1>
+                <p className="text-slate-500 text-sm mt-1">계속하려면 로그인해주세요</p>
             </div>
 
             <InputBox
                 ref={emailRef}
-                label="이메일 주소" type="text" placeholder="이메일을 입력해주세요."
+                label="이메일" type="text" placeholder="이메일을 입력하세요"
                 value={email} onChange={(e) => setEmail(e.target.value)}
                 onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => { if (e.key === "Enter") passwordRef.current?.focus() }}
                 errorMessage="올바른 이메일 형식이 아닙니다."
@@ -78,7 +74,7 @@ function SignInCard({ setView }: SignInCardProps) {
             />
             <InputBox
                 ref={passwordRef}
-                label="비밀번호" type="password" placeholder="비밀번호를 입력해주세요."
+                label="비밀번호" type="password" placeholder="비밀번호를 입력하세요"
                 value={password} onChange={(e) => setPassword(e.target.value)}
                 onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => { if (e.key === "Enter") onSignInButtonClickHandler() }}
                 errorMessage="비밀번호는 8자 이상이어야 합니다."
@@ -87,35 +83,35 @@ function SignInCard({ setView }: SignInCardProps) {
 
             <button
                 onClick={onSignInButtonClickHandler}
-                className="w-full bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-400 hover:to-violet-500 text-white font-semibold py-3 px-4 rounded-xl mt-2 transition-all duration-200 shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/30 active:scale-[0.98]"
+                className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2.5 px-4 rounded-xl mt-1 transition-all duration-200 shadow-[0_0_20px_rgba(99,102,241,0.3)] hover:shadow-[0_0_28px_rgba(99,102,241,0.4)] active:scale-[0.98] text-sm"
             >
                 로그인
             </button>
 
             <div className="flex items-center justify-center gap-3 mt-5">
-                <span
-                    className="text-sm text-indigo-400 hover:text-indigo-300 cursor-pointer transition-colors"
+                <button
+                    className="text-sm text-slate-500 hover:text-slate-300 cursor-pointer transition-colors"
                     onClick={() => setView("find-id")}
                 >
                     아이디 찾기
-                </span>
-                <span className="text-slate-700 text-xs">|</span>
-                <span
-                    className="text-sm text-indigo-400 hover:text-indigo-300 cursor-pointer transition-colors"
+                </button>
+                <span className="text-white/10 text-xs">|</span>
+                <button
+                    className="text-sm text-slate-500 hover:text-slate-300 cursor-pointer transition-colors"
                     onClick={() => setView("find-password")}
                 >
                     비밀번호 찾기
-                </span>
+                </button>
             </div>
 
-            <div className="mt-4 pt-4 border-t border-white/[0.06] text-center">
-                <span className="text-slate-500 text-sm">계정이 없으신가요? </span>
-                <span
+            <div className="mt-5 pt-5 border-t border-white/[0.06] text-center">
+                <span className="text-slate-600 text-sm">계정이 없으신가요? </span>
+                <button
                     className="text-sm text-indigo-400 hover:text-indigo-300 cursor-pointer transition-colors font-medium"
                     onClick={() => setView("sign-up")}
                 >
                     회원가입
-                </span>
+                </button>
             </div>
         </motion.div>
     )
@@ -156,60 +152,52 @@ function SignUpCard({ setView }: SignUpCardProps) {
 
     return (
         <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
+            exit={{ opacity: 0, y: -16 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
             className="w-full"
         >
-            <div className="text-center mb-8">
-                <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 mb-4 shadow-lg shadow-indigo-500/25">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        <circle cx="9" cy="7" r="4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        <path d="M22 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
+            <div className="flex items-center gap-2 mb-6">
+                <button
+                    onClick={() => setView("sign-in")}
+                    className="p-1.5 rounded-lg text-slate-600 hover:text-slate-300 hover:bg-white/[0.06] transition-all"
+                >
+                    <ArrowLeft size={16} />
+                </button>
+                <div>
+                    <h1 className="text-lg font-bold text-slate-100 tracking-tight leading-tight">계정 만들기</h1>
+                    <p className="text-slate-500 text-xs">새 계정을 등록해주세요</p>
                 </div>
-                <h1 className="text-2xl font-bold text-slate-100">계정 만들기</h1>
-                <p className="text-slate-400 text-sm mt-1">새 계정을 등록해주세요</p>
             </div>
 
-            <InputBox ref={nameRef} label="이름" type="text" placeholder="성함을 입력해주세요." value={name}
+            <InputBox ref={nameRef} label="이름" type="text" placeholder="성함을 입력해주세요" value={name}
                 onChange={(e) => setName(e.target.value)}
                 onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => { if (e.key === "Enter") emailRef.current?.focus() }}
                 errorMessage="이름은 2자 이상이어야 합니다." onValidate={(v) => v.length >= 2} />
-            <InputBox ref={emailRef} label="이메일 주소" type="text" placeholder="이메일을 입력해주세요." value={email}
+            <InputBox ref={emailRef} label="이메일" type="text" placeholder="이메일을 입력해주세요" value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => { if (e.key === "Enter") passwordRef.current?.focus() }}
                 errorMessage="올바른 이메일 형식이 아닙니다." onValidate={(v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)} />
-            <InputBox ref={passwordRef} label="비밀번호" type="password" placeholder="비밀번호를 입력해주세요." value={password}
+            <InputBox ref={passwordRef} label="비밀번호" type="password" placeholder="비밀번호를 입력해주세요" value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => { if (e.key === "Enter") passwordCheckRef.current?.focus() }}
                 errorMessage="비밀번호는 8자 이상이어야 합니다." onValidate={(v) => v.length >= 8} />
-            <InputBox ref={passwordCheckRef} label="비밀번호 확인" type="password" placeholder="비밀번호를 재입력해주세요." value={passwordCheck}
+            <InputBox ref={passwordCheckRef} label="비밀번호 확인" type="password" placeholder="비밀번호를 재입력해주세요" value={passwordCheck}
                 onChange={(e) => setPasswordCheck(e.target.value)}
                 onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => { if (e.key === "Enter") phoneRef.current?.focus() }}
                 errorMessage="비밀번호가 일치하지 않습니다." onValidate={(v) => v === password} />
-            <InputBox ref={phoneRef} label="휴대전화번호" type="text" placeholder="전화번호를 입력해주세요. ex)01012345678" value={phone}
+            <InputBox ref={phoneRef} label="휴대전화번호" type="text" placeholder="01012345678" value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => { if (e.key === "Enter") onSignUpButtonClickHandler() }}
                 errorMessage="올바른 전화번호 형식이 아닙니다." onValidate={(v) => /^[0-9]{11,13}$/.test(v)} />
 
             <button
                 onClick={onSignUpButtonClickHandler}
-                className="w-full bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-400 hover:to-violet-500 text-white font-semibold py-3 px-4 rounded-xl mt-2 transition-all duration-200 shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/30 active:scale-[0.98]"
+                className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2.5 px-4 rounded-xl mt-1 transition-all duration-200 shadow-[0_0_20px_rgba(99,102,241,0.3)] hover:shadow-[0_0_28px_rgba(99,102,241,0.4)] active:scale-[0.98] text-sm"
             >
                 가입하기
             </button>
-
-            <div className="mt-4 pt-4 border-t border-white/[0.06] text-center">
-                <span className="text-slate-500 text-sm">이미 계정이 있으신가요? </span>
-                <span
-                    className="text-sm text-indigo-400 hover:text-indigo-300 cursor-pointer transition-colors font-medium"
-                    onClick={() => setView("sign-in")}
-                >
-                    로그인으로 돌아가기
-                </span>
-            </div>
         </motion.div>
     )
 }
@@ -243,59 +231,55 @@ function FindIdCard({ setView }: FindIdCardProps) {
 
     return (
         <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
+            exit={{ opacity: 0, y: -16 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
             className="w-full"
         >
-            <div className="text-center mb-8">
-                <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 mb-4 shadow-lg shadow-indigo-500/25">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="11" cy="11" r="8" stroke="white" strokeWidth="2"/>
-                        <path d="m21 21-4.35-4.35" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-                    </svg>
+            <div className="flex items-center gap-2 mb-6">
+                <button
+                    onClick={() => setView("sign-in")}
+                    className="p-1.5 rounded-lg text-slate-600 hover:text-slate-300 hover:bg-white/[0.06] transition-all"
+                >
+                    <ArrowLeft size={16} />
+                </button>
+                <div>
+                    <h1 className="text-lg font-bold text-slate-100 tracking-tight leading-tight">아이디 찾기</h1>
+                    <p className="text-slate-500 text-xs">이름과 전화번호로 이메일을 찾아드려요</p>
                 </div>
-                <h1 className="text-2xl font-bold text-slate-100">아이디 찾기</h1>
-                <p className="text-slate-400 text-sm mt-1">이름과 전화번호로 이메일을 찾아드려요</p>
             </div>
 
-            <InputBox ref={nameRef} label="이름" type="text" placeholder="이름을 입력해주세요." value={name}
+            <InputBox ref={nameRef} label="이름" type="text" placeholder="이름을 입력해주세요" value={name}
                 onChange={(e: ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
                 onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => { if (e.key === "Enter") phoneRef.current?.focus() }}
                 errorMessage="이름은 2자 이상이어야 합니다." onValidate={(v) => v.length >= 2} />
-            <InputBox ref={phoneRef} label="휴대전화번호" type="text" placeholder="전화번호를 입력해주세요. ex)01012345678" value={phone}
+            <InputBox ref={phoneRef} label="휴대전화번호" type="text" placeholder="01012345678" value={phone}
                 onChange={(e: ChangeEvent<HTMLInputElement>) => setPhone(e.target.value)}
                 onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => { if (e.key === "Enter") onFindIdButtonClickHandler() }}
                 errorMessage="올바른 전화번호 형식이 아닙니다." onValidate={(v) => /^[0-9]{11,13}$/.test(v)} />
 
             {foundEmail && (
-                <div className="mb-4 p-4 bg-indigo-500/10 border border-indigo-500/20 rounded-xl">
-                    <p className="text-xs text-indigo-400 mb-1 font-medium">찾은 이메일</p>
-                    <p className="text-slate-100 font-semibold">{foundEmail}</p>
+                <div className="mb-4 p-4 bg-indigo-500/8 border border-indigo-500/20 rounded-xl">
+                    <p className="text-[11px] text-indigo-400 mb-1 font-medium uppercase tracking-wider">찾은 이메일</p>
+                    <p className="text-slate-100 font-semibold text-sm">{foundEmail}</p>
                 </div>
             )}
 
             <button
                 onClick={onFindIdButtonClickHandler}
-                className="w-full bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-400 hover:to-violet-500 text-white font-semibold py-3 px-4 rounded-xl mt-2 transition-all duration-200 shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/30 active:scale-[0.98]"
+                className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2.5 px-4 rounded-xl mt-1 transition-all duration-200 shadow-[0_0_20px_rgba(99,102,241,0.3)] active:scale-[0.98] text-sm"
             >
                 아이디 찾기
             </button>
 
             <div className="flex items-center justify-center gap-3 mt-5">
-                <span
-                    className="text-sm text-indigo-400 hover:text-indigo-300 cursor-pointer transition-colors"
-                    onClick={() => setView("sign-in")}
-                >
-                    로그인으로 돌아가기
-                </span>
-                <span className="text-slate-700 text-xs">|</span>
-                <span
-                    className="text-sm text-indigo-400 hover:text-indigo-300 cursor-pointer transition-colors"
+                <button
+                    className="text-sm text-slate-500 hover:text-slate-300 cursor-pointer transition-colors"
                     onClick={() => setView("find-password")}
                 >
                     비밀번호 찾기
-                </span>
+                </button>
             </div>
         </motion.div>
     )
@@ -349,82 +333,74 @@ function FindPasswordCard({ setView }: FindPasswordCardProps) {
 
     return (
         <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
+            exit={{ opacity: 0, y: -16 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
             className="w-full"
         >
-            <div className="text-center mb-8">
-                <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 mb-4 shadow-lg shadow-indigo-500/25">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" stroke="white" strokeWidth="2"/>
-                        <path d="M7 11V7a5 5 0 0110 0v4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
+            <div className="flex items-center gap-2 mb-6">
+                <button
+                    onClick={() => setView("sign-in")}
+                    className="p-1.5 rounded-lg text-slate-600 hover:text-slate-300 hover:bg-white/[0.06] transition-all"
+                >
+                    <ArrowLeft size={16} />
+                </button>
+                <div>
+                    <h1 className="text-lg font-bold text-slate-100 tracking-tight leading-tight">비밀번호 찾기</h1>
+                    <p className="text-slate-500 text-xs">이메일로 인증코드를 발송해드려요</p>
                 </div>
-                <h1 className="text-2xl font-bold text-slate-100">비밀번호 찾기</h1>
-                <p className="text-slate-400 text-sm mt-1">이메일로 인증코드를 발송해드려요</p>
             </div>
 
-            {/* 이메일 입력 + 인증번호 받기 버튼 */}
+            {/* 이메일 입력 */}
             <div className="mb-4">
-                <label className="block text-sm font-medium text-slate-400 mb-1.5">이메일 주소</label>
+                <label className="block text-[11px] font-medium text-slate-500 mb-1.5 uppercase tracking-wider">이메일</label>
                 <div className="flex gap-2">
                     <input
                         ref={emailRef}
-                        id="email"
                         type="email"
-                        placeholder="이메일을 입력해주세요."
+                        placeholder="이메일을 입력해주세요"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => { if (e.key === "Enter" && !isEmailSent) onSendVerificationCodeHandler() }}
                         disabled={isEmailSent}
-                        className={`flex-1 px-4 py-3 rounded-xl border text-slate-100 placeholder-slate-600 text-sm focus:outline-none focus:ring-2 focus:border-indigo-500/50 focus:ring-indigo-500/10 transition-all duration-200 ${
+                        className={`flex-1 px-3.5 py-2.5 rounded-xl border text-slate-100 placeholder-slate-700 text-sm focus:outline-none focus:ring-2 focus:border-indigo-500/40 focus:ring-indigo-500/10 transition-all duration-200 ${
                             isEmailSent
-                                ? "bg-white/[0.02] border-white/[0.04] text-slate-500 cursor-not-allowed"
+                                ? "bg-white/[0.02] border-white/[0.04] text-slate-600 cursor-not-allowed"
                                 : "bg-white/[0.04] border-white/[0.08]"
                         }`}
                     />
                     <button
                         onClick={onSendVerificationCodeHandler}
                         disabled={isEmailSent}
-                        className="whitespace-nowrap px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-400 hover:to-violet-500 text-white shadow-lg shadow-indigo-500/20 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:from-indigo-500 disabled:hover:to-violet-600"
+                        className="whitespace-nowrap px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 bg-indigo-600 hover:bg-indigo-500 text-white disabled:opacity-40 disabled:cursor-not-allowed"
                     >
                         인증번호 받기
                     </button>
                 </div>
                 {email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && (
-                    <div className="flex items-center gap-1.5 mt-1.5">
-                        <div className="w-1 h-1 rounded-full bg-red-400 flex-shrink-0" />
-                        <p className="text-xs text-red-400">올바른 이메일 형식이 아닙니다.</p>
-                    </div>
+                    <p className="text-[11px] text-red-400 mt-1.5">올바른 이메일 형식이 아닙니다.</p>
                 )}
             </div>
 
             {/* 인증번호 입력 */}
             <div className="mb-4">
-                <label htmlFor="verificationCode" className="block text-sm font-medium text-slate-400 mb-1.5">인증 번호</label>
+                <label className="block text-[11px] font-medium text-slate-500 mb-1.5 uppercase tracking-wider">인증 번호</label>
                 <input
                     ref={verificationCodeRef}
-                    id="verificationCode"
                     type="text"
-                    placeholder="이메일로 받은 인증 번호를 입력해주세요."
+                    placeholder="이메일로 받은 인증 번호를 입력해주세요"
                     value={number}
                     onChange={(e) => setNumber(e.target.value)}
                     onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => { if (e.key === "Enter" && isEmailSent) onVerifyCodeButtonClickHandler() }}
-                    className="w-full px-4 py-3 rounded-xl bg-white/[0.04] border border-white/[0.08] text-slate-100 placeholder-slate-600 text-sm focus:outline-none focus:ring-2 focus:border-indigo-500/50 focus:ring-indigo-500/10 transition-all duration-200"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-slate-100 placeholder-slate-700 text-sm focus:outline-none focus:ring-2 focus:border-indigo-500/40 focus:ring-indigo-500/10 transition-all duration-200"
                 />
-                {number === "" && isEmailSent && (
-                    <div className="flex items-center gap-1.5 mt-1.5">
-                        <div className="w-1 h-1 rounded-full bg-red-400 flex-shrink-0" />
-                        <p className="text-xs text-red-400">인증 번호를 입력해주세요.</p>
-                    </div>
-                )}
             </div>
 
             {isEmailSent && (
-                <div className="mb-4 p-4 bg-indigo-500/10 border border-indigo-500/20 rounded-xl">
-                    <p className="text-xs text-indigo-400 font-medium">
-                        {email}로 인증코드를 발송했습니다. 메일함을 확인해주세요.
+                <div className="mb-4 p-3.5 bg-indigo-500/8 border border-indigo-500/20 rounded-xl">
+                    <p className="text-xs text-indigo-400">
+                        <span className="font-medium">{email}</span>로 인증코드를 발송했습니다.
                     </p>
                 </div>
             )}
@@ -432,26 +408,10 @@ function FindPasswordCard({ setView }: FindPasswordCardProps) {
             <button
                 onClick={onVerifyCodeButtonClickHandler}
                 disabled={!isEmailSent}
-                className="w-full bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-400 hover:to-violet-500 text-white font-semibold py-3 px-4 rounded-xl mt-2 transition-all duration-200 shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/30 active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:from-indigo-500 disabled:hover:to-violet-600 disabled:active:scale-100"
+                className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2.5 px-4 rounded-xl mt-1 transition-all duration-200 shadow-[0_0_20px_rgba(99,102,241,0.3)] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100 text-sm"
             >
                 인증하기
             </button>
-
-            <div className="flex items-center justify-center gap-3 mt-5">
-                <span
-                    className="text-sm text-indigo-400 hover:text-indigo-300 cursor-pointer transition-colors"
-                    onClick={() => setView("sign-in")}
-                >
-                    로그인으로 돌아가기
-                </span>
-                <span className="text-slate-700 text-xs">|</span>
-                <span
-                    className="text-sm text-indigo-400 hover:text-indigo-300 cursor-pointer transition-colors"
-                    onClick={() => setView("find-id")}
-                >
-                    아이디 찾기
-                </span>
-            </div>
         </motion.div>
     )
 }
@@ -460,19 +420,28 @@ export default function Authentication() {
     const [view, setView] = useState<AuthView>("sign-in")
 
     return (
-        <div className="relative min-h-screen flex items-center justify-center bg-[#0d0d12] p-4 overflow-hidden">
+        <div className="relative min-h-screen flex items-center justify-center bg-[#09090f] p-4 overflow-hidden">
             {/* 배경 광원 효과 */}
-            <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-500/10 blur-[120px] rounded-full pointer-events-none" />
-            <div className="absolute bottom-1/4 left-1/4 w-[400px] h-[400px] bg-violet-500/8 blur-[100px] rounded-full pointer-events-none" />
+            <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] bg-indigo-600/8 blur-[140px] rounded-full pointer-events-none" />
+            <div className="absolute bottom-1/4 left-1/3 w-[400px] h-[350px] bg-violet-600/6 blur-[120px] rounded-full pointer-events-none" />
+            <div className="absolute top-1/4 right-1/4 w-[300px] h-[300px] bg-indigo-500/5 blur-[100px] rounded-full pointer-events-none" />
 
             {/* 카드 */}
-            <div className="relative w-full max-w-[400px] bg-[#13131a] rounded-2xl p-8 border border-white/[0.06] shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
-                <AnimatePresence mode="wait">
-                    {view === "sign-in" && <SignInCard key="sign-in" setView={setView} />}
-                    {view === "sign-up" && <SignUpCard key="sign-up" setView={setView} />}
-                    {view === "find-id" && <FindIdCard key="find-id" setView={setView} />}
-                    {view === "find-password" && <FindPasswordCard key="find-password" setView={setView} />}
-                </AnimatePresence>
+            <div className="relative w-full max-w-[380px]">
+                {/* 카드 글로우 */}
+                <div className="absolute -inset-px bg-gradient-to-b from-white/[0.06] to-transparent rounded-2xl pointer-events-none" />
+                <div className="relative bg-[#111118] rounded-2xl border border-white/[0.08] shadow-[0_8px_40px_rgba(0,0,0,0.6)] overflow-hidden">
+                    {/* 상단 그라디언트 라인 */}
+                    <div className="h-px bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent" />
+                    <div className="p-7">
+                        <AnimatePresence mode="wait">
+                            {view === "sign-in" && <SignInCard key="sign-in" setView={setView} />}
+                            {view === "sign-up" && <SignUpCard key="sign-up" setView={setView} />}
+                            {view === "find-id" && <FindIdCard key="find-id" setView={setView} />}
+                            {view === "find-password" && <FindPasswordCard key="find-password" setView={setView} />}
+                        </AnimatePresence>
+                    </div>
+                </div>
             </div>
         </div>
     )
