@@ -1,6 +1,6 @@
-import { FindIdRequestDto, SignInRequestDto, SignUpRequestDto } from './request/auth';
+import { FindIdRequestDto, ResetPasswordRequestDto, SignInRequestDto, SignUpRequestDto } from './request/auth';
 import axios from 'axios';
-import { FindIdResponseDto, SignInResponseDto, SignUpResponseDto } from './response/auth';
+import { FindIdResponseDto, ResetPasswordResponseDto, SignInResponseDto, SignUpResponseDto } from './response/auth';
 import { GetTodayScheduleIndexResponseDto, GetWeeklyScheduleIndexResponseDto, ResponseDto } from './response';
 import { PostScheduleRequestDto, UpdateScheduleRequestDto } from "./request/schedule";
 import {
@@ -19,6 +19,10 @@ import {
 } from "./response/todo";
 import { FindPasswordRequestDto, VerifiedNumberRequestDto } from "./request/mail";
 import { FindPasswordResponseDto, VerifiedNumberResponseDto } from "./response/mail";
+import { PostNoticeRequestDto, UpdateNoticeRequestDto } from "./request/notice";
+import { ChangePasswordRequestDto, UpdateMemberRequestDto, WithdrawRequestDto } from "./request/member";
+import { GetMemberResponseDto } from "./response/member";
+import { DeleteNoticeResponseDto, GetNoticeListResponseDto, GetNoticeResponseDto, PostNoticeResponseDto, UpdateNoticeResponseDto } from "./response/notice";
 
 const DOMAIN = import.meta.env.VITE_API_URL;
 
@@ -79,6 +83,13 @@ export const verifiedNumberRequest = async (requestBody: VerifiedNumberRequestDt
     return apiCall(async () => {
         const response = await apiClient.post('/mail/verified', requestBody);
         return response.data as VerifiedNumberResponseDto;
+    });
+};
+
+export const resetPasswordRequest = async (requestBody: ResetPasswordRequestDto): Promise<ResetPasswordResponseDto | ResponseDto> => {
+    return apiCall(async () => {
+        const response = await apiClient.put('/auth/reset-password', requestBody);
+        return response.data as ResetPasswordResponseDto;
     });
 };
 
@@ -168,5 +179,68 @@ export const deleteTodoRequest = async (id: number, accessToken: string): Promis
     return apiCall(async () => {
         const response = await apiClient.delete(`/todo/${id}`, authorization(accessToken));
         return response.data as DeleteTodoResponseDto;
+    });
+};
+
+export const getNoticeListRequest = async (): Promise<GetNoticeListResponseDto | ResponseDto> => {
+    return apiCall(async () => {
+        const response = await apiClient.get('/notice');
+        return response.data as GetNoticeListResponseDto;
+    });
+};
+
+export const getNoticeRequest = async (id: number): Promise<GetNoticeResponseDto | ResponseDto> => {
+    return apiCall(async () => {
+        const response = await apiClient.get(`/notice/${id}`);
+        return response.data as GetNoticeResponseDto;
+    });
+};
+
+export const postNoticeRequest = async (requestBody: PostNoticeRequestDto, accessToken: string): Promise<PostNoticeResponseDto | ResponseDto> => {
+    return apiCall(async () => {
+        const response = await apiClient.post('/notice', requestBody, authorization(accessToken));
+        return response.data as PostNoticeResponseDto;
+    });
+};
+
+export const updateNoticeRequest = async (id: number, requestBody: UpdateNoticeRequestDto, accessToken: string): Promise<UpdateNoticeResponseDto | ResponseDto> => {
+    return apiCall(async () => {
+        const response = await apiClient.put(`/notice/${id}`, requestBody, authorization(accessToken));
+        return response.data as UpdateNoticeResponseDto;
+    });
+};
+
+export const deleteNoticeRequest = async (id: number, accessToken: string): Promise<DeleteNoticeResponseDto | ResponseDto> => {
+    return apiCall(async () => {
+        const response = await apiClient.delete(`/notice/${id}`, authorization(accessToken));
+        return response.data as DeleteNoticeResponseDto;
+    });
+};
+
+export const getMeRequest = async (accessToken: string): Promise<GetMemberResponseDto | ResponseDto> => {
+    return apiCall(async () => {
+        const response = await apiClient.get('/member/me', authorization(accessToken));
+        return response.data as GetMemberResponseDto;
+    });
+};
+
+export const updateMeRequest = async (requestBody: UpdateMemberRequestDto, accessToken: string): Promise<ResponseDto> => {
+    return apiCall(async () => {
+        const response = await apiClient.put('/member/me', requestBody, authorization(accessToken));
+        return response.data as ResponseDto;
+    });
+};
+
+export const changePasswordRequest = async (requestBody: ChangePasswordRequestDto, accessToken: string): Promise<ResponseDto> => {
+    return apiCall(async () => {
+        const response = await apiClient.put('/member/password', requestBody, authorization(accessToken));
+        return response.data as ResponseDto;
+    });
+};
+
+export const withdrawRequest = async (requestBody: WithdrawRequestDto, accessToken: string): Promise<ResponseDto> => {
+    return apiCall(async () => {
+        const response = await apiClient.delete('/member/me', { ...authorization(accessToken), data: requestBody });
+        return response.data as ResponseDto;
     });
 };

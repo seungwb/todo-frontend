@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react"
 import { Link, useLocation, useNavigate } from "react-router-dom"
-import { Menu, X, CheckSquare, LogIn, LogOut } from "lucide-react"
-import { AUTH_PATH, CALENDAR_PATH, MAIN_PATH, TODO_PATH } from "../../constants"
+import { Menu, X, CheckSquare, LogIn, LogOut, User } from "lucide-react"
+import { AUTH_PATH, CALENDAR_PATH, MAIN_PATH, MYPAGE_PATH, TODO_PATH } from "../../constants"
 import { deleteCookie, getCookie } from "../../utils/cookie"
 
 export default function Header() {
@@ -37,6 +37,7 @@ export default function Header() {
         { name: "홈", path: MAIN_PATH, requireAuth: false },
         { name: "일정관리", path: CALENDAR_PATH, requireAuth: true },
         { name: "할일 목록", path: TODO_PATH, requireAuth: true },
+        { name: "마이페이지", path: MYPAGE_PATH, requireAuth: true },
     ]
 
     const isActivePath = (path: string) => location.pathname === path
@@ -87,7 +88,20 @@ export default function Header() {
                     </nav>
 
                     {/* Desktop auth button */}
-                    <div className="hidden md:flex items-center gap-3">
+                    <div className="hidden md:flex items-center gap-2">
+                        {isLoggedIn && (
+                            <Link
+                                to={MYPAGE_PATH}
+                                className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-200 ${
+                                    isActivePath(MYPAGE_PATH)
+                                        ? "bg-indigo-500/20 text-indigo-400"
+                                        : "text-slate-500 hover:text-slate-200 hover:bg-white/[0.05]"
+                                }`}
+                                title="마이페이지"
+                            >
+                                <User size={15} />
+                            </Link>
+                        )}
                         <button
                             onClick={handleAuthClick}
                             className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${

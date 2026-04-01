@@ -4,9 +4,9 @@ import { type ChangeEvent, type KeyboardEvent, useRef, useState } from "react"
 import { useCookies } from "react-cookie"
 import { useNavigate } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
-import { findIdRequest, findPasswordRequest, signInRequest, signUpRequest, verifiedNumberRequest } from "../../apis"
-import type { FindIdRequestDto, SignInRequestDto, SignUpRequestDto } from "../../apis/request/auth"
-import type { FindIdResponseDto, SignInResponseDto, SignUpResponseDto } from "../../apis/response/auth"
+import { findIdRequest, findPasswordRequest, resetPasswordRequest, signInRequest, signUpRequest, verifiedNumberRequest } from "../../apis"
+import type { FindIdRequestDto, ResetPasswordRequestDto, SignInRequestDto, SignUpRequestDto } from "../../apis/request/auth"
+import type { FindIdResponseDto, ResetPasswordResponseDto, SignInResponseDto, SignUpResponseDto } from "../../apis/response/auth"
 import type { ResponseDto } from "../../apis/response"
 import { CALENDAR_PATH, MAIN_PATH } from "../../constants"
 import InputBox from "../../components/InputBox"
@@ -15,7 +15,7 @@ import type { FindPasswordRequestDto, VerifiedNumberRequestDto } from "../../api
 import ResponseCode from "../../types/enum/response-code.enum"
 import { CheckSquare, ArrowLeft } from "lucide-react"
 
-type AuthView = "sign-in" | "sign-up" | "find-id" | "find-password"
+type AuthView = "sign-in" | "sign-up" | "find-id" | "find-password" | "reset-password"
 
 interface SignInCardProps {
     setView: (view: AuthView) => void
@@ -287,9 +287,10 @@ function FindIdCard({ setView }: FindIdCardProps) {
 
 interface FindPasswordCardProps {
     setView: (view: AuthView) => void
+    setVerifiedEmail: (email: string) => void
 }
 
-function FindPasswordCard({ setView }: FindPasswordCardProps) {
+function FindPasswordCard({ setView, setVerifiedEmail }: FindPasswordCardProps) {
     const [email, setEmail] = useState<string>("")
     const [number, setNumber] = useState<string>("")
     const [isEmailSent, setIsEmailSent] = useState<boolean>(false)
@@ -322,8 +323,8 @@ function FindPasswordCard({ setView }: FindPasswordCardProps) {
         if (code === ResponseCode.DATABASE_ERROR) alert("데이터베이스 오류입니다.")
         if (code === ResponseCode.NOT_MATCH_NUMBER) alert("인증번호가 틀렸습니다.")
         if (code !== ResponseCode.SUCCESS) return
-        alert("인증이 완료되었습니다.")
-        setView("sign-in")
+        setVerifiedEmail(email)
+        setView("reset-password")
     }
 
     const onVerifyCodeButtonClickHandler = () => {
@@ -416,8 +417,95 @@ function FindPasswordCard({ setView }: FindPasswordCardProps) {
     )
 }
 
+interface ResetPasswordCardProps {
+    setView: (view: AuthView) => void
+    verifiedEmail: string
+}
+
+function ResetPasswordCard({ setView, verifiedEmail }: ResetPasswordCardProps) {
+    const [newPassword, setNewPassword] = useState<string>("")
+    const [newPasswordCheck, setNewPasswordCheck] = useState<string>("")
+    const newPasswordRef = useRef<HTMLInputElement | null>(null)
+    const newPasswordCheckRef = useRef<HTMLInputElement | null>(null)
+
+    const resetPasswordResponse = (responseBody: ResetPasswordResponseDto | ResponseDto | null) => {
+        if (!responseBody) { alert("네트워크 이상입니다."); return }
+        const { code } = responseBody
+        if (code === ResponseCode.DATABASE_ERROR) alert("데이터베이스 오류입니다.")
+        if (code === ResponseCode.AUTHORIZATION_FAILED) alert("인증이 만료되었습니다. 다시 시도해주세요.")
+        if (code === ResponseCode.NOT_EXISTED_USER) alert("존재하지 않는 이메일입니다.")
+        if (code !== ResponseCode.SUCCESS) return
+        alert("비밀번호가 변경되었습니다. 새 비밀번호로 로그인해주세요.")
+        setView("sign-in")
+    }
+
+    const onResetPasswordButtonClickHandler = () => {
+        if (newPassword !== newPasswordCheck) {
+            alert("비밀번호가 일치하지 않습니다.")
+            return
+        }
+        if (newPassword.length < 8) {
+            alert("비밀번호는 8자 이상이어야 합니다.")
+            return
+        }
+        const requestBody: ResetPasswordRequestDto = { email: verifiedEmail, newPassword }
+        resetPasswordRequest(requestBody).then(resetPasswordResponse)
+    }
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -16 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            className="w-full"
+        >
+            <div className="flex items-center gap-2 mb-6">
+                <button
+                    onClick={() => setView("find-password")}
+                    className="p-1.5 rounded-lg text-slate-600 hover:text-slate-300 hover:bg-white/[0.06] transition-all"
+                >
+                    <ArrowLeft size={16} />
+                </button>
+                <div>
+                    <h1 className="text-lg font-bold text-slate-100 tracking-tight leading-tight">새 비밀번호 설정</h1>
+                    <p className="text-slate-500 text-xs">사용할 새 비밀번호를 입력해주세요</p>
+                </div>
+            </div>
+
+            <div className="mb-4 p-3.5 bg-indigo-500/8 border border-indigo-500/20 rounded-xl">
+                <p className="text-[11px] text-indigo-400 mb-0.5 font-medium uppercase tracking-wider">인증된 이메일</p>
+                <p className="text-slate-100 text-sm font-semibold">{verifiedEmail}</p>
+            </div>
+
+            <InputBox
+                ref={newPasswordRef}
+                label="새 비밀번호" type="password" placeholder="새 비밀번호를 입력해주세요"
+                value={newPassword} onChange={(e) => setNewPassword(e.target.value)}
+                onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => { if (e.key === "Enter") newPasswordCheckRef.current?.focus() }}
+                errorMessage="비밀번호는 8자 이상이어야 합니다." onValidate={(v) => v.length >= 8}
+            />
+            <InputBox
+                ref={newPasswordCheckRef}
+                label="새 비밀번호 확인" type="password" placeholder="새 비밀번호를 재입력해주세요"
+                value={newPasswordCheck} onChange={(e) => setNewPasswordCheck(e.target.value)}
+                onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => { if (e.key === "Enter") onResetPasswordButtonClickHandler() }}
+                errorMessage="비밀번호가 일치하지 않습니다." onValidate={(v) => v === newPassword}
+            />
+
+            <button
+                onClick={onResetPasswordButtonClickHandler}
+                className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2.5 px-4 rounded-xl mt-1 transition-all duration-200 shadow-[0_0_20px_rgba(99,102,241,0.3)] hover:shadow-[0_0_28px_rgba(99,102,241,0.4)] active:scale-[0.98] text-sm"
+            >
+                비밀번호 변경
+            </button>
+        </motion.div>
+    )
+}
+
 export default function Authentication() {
     const [view, setView] = useState<AuthView>("sign-in")
+    const [verifiedEmail, setVerifiedEmail] = useState<string>("")
 
     return (
         <div className="relative min-h-screen flex items-center justify-center bg-[#09090f] p-4 overflow-hidden">
@@ -438,7 +526,8 @@ export default function Authentication() {
                             {view === "sign-in" && <SignInCard key="sign-in" setView={setView} />}
                             {view === "sign-up" && <SignUpCard key="sign-up" setView={setView} />}
                             {view === "find-id" && <FindIdCard key="find-id" setView={setView} />}
-                            {view === "find-password" && <FindPasswordCard key="find-password" setView={setView} />}
+                            {view === "find-password" && <FindPasswordCard key="find-password" setView={setView} setVerifiedEmail={setVerifiedEmail} />}
+                            {view === "reset-password" && <ResetPasswordCard key="reset-password" setView={setView} verifiedEmail={verifiedEmail} />}
                         </AnimatePresence>
                     </div>
                 </div>

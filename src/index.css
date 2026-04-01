@@ -156,3 +156,88 @@ input[type="datetime-local"] {
 .fc .fc-daygrid-day:hover {
   background-color: rgba(255, 255, 255, 0.02);
 }
+
+/* ─── react-day-picker 다크 테마 ─── */
+.rdp-dark {
+  --rdp-accent-color: rgb(99, 102, 241);
+  --rdp-accent-background-color: rgba(99, 102, 241, 0.15);
+  --rdp-today-color: rgb(129, 140, 248);
+  --rdp-day_button-border-radius: 0.5rem;
+  --rdp-day_button-width: 2.125rem;
+  --rdp-day_button-height: 2.125rem;
+  --rdp-cell-size: 2.125rem;
+  color: rgb(203, 213, 225);
+  background: transparent;
+}
+
+.rdp-dark .rdp-caption_label {
+  color: rgb(226, 232, 240);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.rdp-dark .rdp-weekday {
+  color: rgb(71, 85, 105);
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.rdp-dark .rdp-day_button {
+  color: rgb(203, 213, 225);
+  border-radius: 0.5rem;
+  font-size: 0.8125rem;
+}
+
+.rdp-dark .rdp-day_button:hover:not([disabled]) {
+  background-color: rgba(255, 255, 255, 0.07);
+  color: rgb(241, 245, 249);
+}
+
+.rdp-dark .rdp-outside .rdp-day_button {
+  color: rgb(51, 65, 85);
+}
+
+.rdp-dark .rdp-disabled .rdp-day_button {
+  color: rgb(51, 65, 85);
+  cursor: not-allowed;
+}
+
+.rdp-dark .rdp-selected .rdp-day_button {
+  background-color: rgb(99, 102, 241);
+  color: #fff;
+}
+
+.rdp-dark .rdp-selected .rdp-day_button:hover {
+  background-color: rgb(129, 140, 248);
+}
+
+.rdp-dark .rdp-range_middle {
+  background-color: rgba(99, 102, 241, 0.13);
+}
+
+.rdp-dark .rdp-range_middle .rdp-day_button {
+  background: transparent;
+  border-radius: 0;
+  color: rgb(199, 210, 254);
+}
+
+.rdp-dark .rdp-range_start {
+  background: linear-gradient(to right, transparent 50%, rgba(99, 102, 241, 0.13) 50%);
+}
+
+.rdp-dark .rdp-range_end {
+  background: linear-gradient(to left, transparent 50%, rgba(99, 102, 241, 0.13) 50%);
+}
+
+.rdp-dark .rdp-nav button {
+  color: rgb(100, 116, 139);
+  border-radius: 0.5rem;
+  width: 1.75rem;
+  height: 1.75rem;
+}
+
+.rdp-dark .rdp-nav button:hover {
+  background-color: rgba(255, 255, 255, 0.07);
+  color: rgb(203, 213, 225);
+}

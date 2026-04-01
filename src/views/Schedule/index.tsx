@@ -1,13 +1,18 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import FullCalendar from "@fullcalendar/react"
 import type { EventInput } from "@fullcalendar/core"
 import dayGridPlugin from "@fullcalendar/daygrid"
 import interactionPlugin from "@fullcalendar/interaction"
 import type { DateClickArg } from "@fullcalendar/interaction"
 import { motion, AnimatePresence } from "framer-motion"
-import { CalendarDays, Plus } from "lucide-react"
+import { CalendarDays, ChevronDown, Plus } from "lucide-react"
+import { DayPicker } from "react-day-picker"
+import type { DateRange } from "react-day-picker"
+import "react-day-picker/style.css"
+import { addDays, subDays, startOfDay, format } from "date-fns"
+import { ko } from "date-fns/locale"
 import ScheduleModal from "../../components/ScheduleModal"
 import ScheduleListItem from "../../components/ScheduleListItem"
 import type { ScheduleListItems } from "../../types/interface"
@@ -25,6 +30,13 @@ const FILTERS = [
 
 type FilterKey = typeof FILTERS[number]["key"]
 
+const formatRange = (range: DateRange) => {
+    const fmt = (d: Date) => format(d, "M.d")
+    if (!range.from) return "날짜 선택"
+    if (!range.to || range.from.getTime() === range.to.getTime()) return fmt(range.from)
+    return `${fmt(range.from)} – ${fmt(range.to)}`
+}
+
 export default function Schedule() {
     const [events, setEvents] = useState<EventInput[]>([])
     const [isModalOpen, setIsModalOpen] = useState(false)
@@ -32,10 +44,34 @@ export default function Schedule() {
     const [filterType, setFilterType] = useState<FilterKey>("today")
     const [cookies] = useCookies()
 
+    const today = startOfDay(new Date())
+    const [dateRange, setDateRange] = useState<DateRange>({ from: today, to: addDays(today, 7) })
+    const [pickerOpen, setPickerOpen] = useState(false)
+    const pickerRef = useRef<HTMLDivElement>(null)
+
     useEffect(() => {
         fetchEvents()
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
+
+    useEffect(() => {
+        if (!pickerOpen) return
+        const handleClickOutside = (e: MouseEvent) => {
+            if (pickerRef.current && !pickerRef.current.contains(e.target as Node)) {
+                setPickerOpen(false)
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside)
+        return () => document.removeEventListener("mousedown", handleClickOutside)
+    }, [pickerOpen])
+
+    const handleFilterChange = (key: FilterKey) => {
+        const t = startOfDay(new Date())
+        if (key === "future") setDateRange({ from: t, to: addDays(t, 7) })
+        if (key === "past") setDateRange({ from: subDays(t, 7), to: t })
+        setFilterType(key)
+        setPickerOpen(false)
+    }
 
     const handleDateClick = (info: DateClickArg) => {
         const clickedDateTime = new Date(info.date)
@@ -62,7 +98,7 @@ export default function Schedule() {
         const responseBody = await getScheduleRequest(accessToken).then(getScheduleResponse)
         if (!responseBody || !("scheduleListItems" in responseBody)) return
 
-        const { scheduleListItems } = responseBody
+        const { scheduleListItems } = responseBody as GetScheduleResponseDto
         const formattedEvents: EventInput[] = scheduleListItems.map((event: ScheduleListItems) => ({
             title: event.title,
             start: new Date(event.startDate),
@@ -81,17 +117,19 @@ export default function Schedule() {
     }
 
     const filteredEvents = events.filter((event) => {
-        const startDate = new Date(event.start as Date)
-        startDate.setHours(0, 0, 0, 0)
-        const endDate = new Date(event.end as Date)
-        endDate.setHours(0, 0, 0, 0)
-        const today = new Date()
-        today.setHours(0, 0, 0, 0)
+        const eventStart = startOfDay(new Date(event.start as Date))
+        const eventEnd = startOfDay(new Date(event.end as Date))
+        const t = startOfDay(new Date())
 
-        if (filterType === "past") return endDate.getTime() < today.getTime()
-        if (filterType === "today") return startDate.getTime() <= today.getTime() && endDate.getTime() >= today.getTime()
-        if (filterType === "future") return startDate.getTime() > today.getTime() || endDate.getTime() > today.getTime()
-        return true
+        if (filterType === "today") {
+            return eventStart <= t && eventEnd >= t
+        }
+
+        const from = dateRange.from ? startOfDay(dateRange.from) : null
+        const to = dateRange.to ? startOfDay(dateRange.to) : null
+        if (!from) return true
+        const rangeEnd = to ?? from
+        return eventStart <= rangeEnd && eventEnd >= from
     })
 
     return (
@@ -133,23 +171,85 @@ export default function Schedule() {
                     />
                 </div>
 
-                {/* 필터 + 카운트 */}
+                {/* 필터 + 날짜 범위 + 카운트 */}
                 <div className="flex items-center justify-between mb-5">
-                    <div className="flex gap-1 bg-[#111118] border border-white/[0.07] rounded-xl p-1">
-                        {FILTERS.map(({ key, label }) => (
-                            <button
-                                key={key}
-                                onClick={() => setFilterType(key)}
-                                className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
-                                    filterType === key
-                                        ? "bg-white/[0.08] text-slate-100"
-                                        : "text-slate-500 hover:text-slate-300"
-                                }`}
-                            >
-                                {label}
-                            </button>
-                        ))}
+                    <div className="flex items-center gap-3 flex-wrap">
+                        {/* 필터 탭 */}
+                        <div className="flex gap-1 bg-[#111118] border border-white/[0.07] rounded-xl p-1">
+                            {FILTERS.map(({ key, label }) => (
+                                <button
+                                    key={key}
+                                    onClick={() => handleFilterChange(key)}
+                                    className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                                        filterType === key
+                                            ? "bg-white/[0.08] text-slate-100"
+                                            : "text-slate-500 hover:text-slate-300"
+                                    }`}
+                                >
+                                    {label}
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* 날짜 범위 picker (오늘 탭 제외) */}
+                        {filterType !== "today" && (
+                            <div className="relative" ref={pickerRef}>
+                                <button
+                                    onClick={() => setPickerOpen(!pickerOpen)}
+                                    className="flex items-center gap-1.5 px-3.5 py-1.5 bg-[#111118] border border-white/[0.07] hover:border-white/[0.14] rounded-xl text-sm text-slate-300 transition-all duration-200"
+                                >
+                                    <CalendarDays size={13} className="text-slate-500" />
+                                    {formatRange(dateRange)}
+                                    <ChevronDown
+                                        size={13}
+                                        className={`text-slate-500 transition-transform duration-200 ${pickerOpen ? "rotate-180" : ""}`}
+                                    />
+                                </button>
+
+                                <AnimatePresence>
+                                    {pickerOpen && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 6, scale: 0.97 }}
+                                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                                            exit={{ opacity: 0, y: 4, scale: 0.97 }}
+                                            transition={{ duration: 0.15 }}
+                                            className="absolute top-full mt-2 left-0 z-50 bg-[#111118] border border-white/[0.07] rounded-2xl shadow-[0_8px_40px_rgba(0,0,0,0.6)] p-4"
+                                        >
+                                            <DayPicker
+                                                mode="range"
+                                                selected={dateRange}
+                                                onSelect={(r) => { if (r) setDateRange(r) }}
+                                                locale={ko}
+                                                classNames={{ root: "rdp-dark" }}
+                                            />
+                                            <div className="flex justify-end gap-2 mt-2 pt-3 border-t border-white/[0.06]">
+                                                <button
+                                                    onClick={() => {
+                                                        const t = startOfDay(new Date())
+                                                        setDateRange(
+                                                            filterType === "future"
+                                                                ? { from: t, to: addDays(t, 7) }
+                                                                : { from: subDays(t, 7), to: t }
+                                                        )
+                                                    }}
+                                                    className="px-3 py-1.5 text-xs text-slate-400 hover:text-slate-200 transition-colors"
+                                                >
+                                                    초기화
+                                                </button>
+                                                <button
+                                                    onClick={() => setPickerOpen(false)}
+                                                    className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium rounded-lg transition-all"
+                                                >
+                                                    적용
+                                                </button>
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
+                        )}
                     </div>
+
                     <span className="text-slate-600 text-sm">
                         {filteredEvents.length > 0
                             ? <span className="text-slate-400">{filteredEvents.length}</span>
