@@ -15,6 +15,7 @@ enum ResponseCode {
     //HTTP Status 401
     SIGN_IN_FAIL = "SF",
     AUTHORIZATION_FAILED = "AF",
+    WRONG_PASSWORD = "WP",
 
     //HTTP Status 404
     FIND_ID_FAIL = "FF",

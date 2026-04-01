@@ -399,3 +399,16 @@
 - `src/components/TodoModal/index.tsx` — 상단 컬러 바, 아이콘 헤더, autoFocus
 - `src/components/ScheduleListItem/index.tsx` — hover-only 액션 버튼, 동일일 날짜 처리
 - `src/components/ScheduleModal/index.tsx` — 상단 컬러 바, 아이콘 헤더, autoFocus
+
+---
+
+# 신규 기능 구현 (2026-04-01)
+
+## 비밀번호 재설정
+이메일 인증 완료 후 새 비밀번호 입력 화면(`ResetPasswordCard`)으로 이동하여 비밀번호를 변경할 수 있는 흐름 완성.
+
+## 공지사항
+더미 데이터 → 실제 API 연동으로 전면 재작성. 목록 조회, 상세 조회(조회수 표시), 작성·수정·삭제(로그인 사용자) 기능 구현.
+
+## 마이페이지
+회원정보 조회·수정(이름/전화번호), 비밀번호 변경, 활동 통계(할일·일정), 로그아웃, 회원 탈퇴 기능이 포함된 마이페이지 페이지 신규 구현. 헤더 네비게이션 및 라우트 등록 완료.
